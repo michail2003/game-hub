@@ -3,16 +3,12 @@ from .models import Game
 # Create your views here.
 def home(request):
     games = Game.objects.all()
-    context = {
-        'games': games
-    }
-    return render(request, 'base.html', context)
+
+    searched_word = request.GET.get('search')
+    if searched_word:
+        games = games.filter(title__contains=searched_word)
+    return render(request, 'base.html', {'games': games})
 
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     return render(request, 'game.html', {'game': game})
-
-def search(request):
-    query = request.GET.get('q')
-    results = Game.objects.filter(title__icontains=query)
-    return render(request, 'search_results.html', {'results': results})
