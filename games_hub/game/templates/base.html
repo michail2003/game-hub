@@ -5,12 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Add a delay when hiding the genres box */
+      .genres-box {
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+.group:hover .genres-box,
+.group:focus-within .genres-box {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.genres-box {
+  transition-delay: 0.2s;
+}
+    </style>
 </head>
 <body>
     <nav class="bg-gray-800 text-white">
         <ul class="flex p-4 justify-evenly gap-4 items-center">
            <li><a href=""><h1 class="text-4xl font-bold">Game hub</h1></a></li>
-           <li clas><a href="{% url 'home' %}" class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 512 512"><path fill="#ffffff" d="M40 48C26.7 48 16 58.7 16 72l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24L40 48zM192 64c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L192 64zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-288 0zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-288 0zM16 232l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24l-48 0c-13.3 0-24 10.7-24 24zM40 368c-13.3 0-24 10.7-24 24l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24l-48 0z"/></svg> Genres</a></li>
+           <li class="relative group">
+                <a href="{% url 'home' %}" class="flex items-center gap-2">
+                    <!-- SVG icon here -->
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 512 512"><path fill="#ffffff" d="M40 48C26.7 48 16 58.7 16 72l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24L40 48zM192 64c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L192 64zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-288 0zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l288 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-288 0zM16 232l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24l-48 0c-13.3 0-24 10.7-24 24zM40 368c-13.3 0-24 10.7-24 24l0 48c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24l0-48c0-13.3-10.7-24-24-24l-48 0z"/></svg>
+                    Genres
+                </a>
+                <div class="absolute left-1/2 top-full mt-2 bg-white text-black rounded shadow-lg p-4 z-20 min-w-40 flex-col genres-box">
+                    <ul>
+                        {% for value, display in genres %}
+                        <li class="py-1 px-2 text-gray-700 hover:bg-gray-200 rounded">
+                <a href="?genre={{ value }}" class="block w-full h-full">{{ display }}</a>
+            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
             <li>
                <form action="{% url 'home' %}" method="get" class="flex items-center justify-center">
                 <input 
