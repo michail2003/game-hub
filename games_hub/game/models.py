@@ -2,36 +2,17 @@ from django.db import models
 
 # Create your models here.
 Console_CHOICES = (
-    ('Ps3', 'PlayStation3'),
-    ('Ps4', 'PlayStation4'),
-    ('Ps5', 'PlayStation5'),
+    ('Ps3', 'PlayStation 3'),
+    ('Ps4', 'PlayStation 4'),
+    ('Ps5', 'PlayStation 5'),
     ('Xbox360', 'Xbox 360'),
     ('XboxOne', 'Xbox One'),
-    ('XboxSeriesX', 'Xbox Series X'),
+    ('XboxSeriesX', 'Xbox Series X/S'),
     ('Switch', 'Nintendo Switch'),
     ('PC', 'PC'),
 )
 
-GENRE_CHOICES = [
-    ('action', 'Action'),
-    ('adventure', 'Adventure'),
-    ('rpg', 'RPG'),
-    ('simulation', 'Simulation'),
-    ('strategy', 'Strategy'),
-    ('sports', 'Sports'),
-    ('racing', 'Racing'),
-    ('shooter', 'Shooter'),
-    ('fighting', 'Fighting'),
-    ('horror', 'Horror'),
-    ('stealth', 'Stealth'),
-    ('survival', 'Survival'),
-    ('singleplayer', 'Singleplayer'),
-    ('multiplayer', 'Multiplayer'),
-    ('first_person', 'First Person'),
-    ('third_person', 'Third Person'),
-    ('co_op', 'Co-Op'),
-    ('fps_tps', 'FPS/TPS'),
-]
+
 MIN_AGE_CHOICES = (
     (0, 0),
     (6, 6),
@@ -40,11 +21,12 @@ MIN_AGE_CHOICES = (
     (18, 18),
     )
 class Game_Genre(models.Model):
-    genre = models.CharField(max_length=50, choices=GENRE_CHOICES)
+    genre = models.CharField(max_length=50)
     def __str__(self):
         return self.genre
+    
 class Game(models.Model):
-    title = models.CharField(max_length=15)
+    title = models.CharField(max_length=50)
     description = models.TextField()
     genres = models.ManyToManyField(Game_Genre, related_name= 'GENRE_CHOICES')
     release_date = models.DateField()
@@ -58,18 +40,15 @@ class Game(models.Model):
         default=0
     )
     discount = models.IntegerField(
-        default=0, blank=True, null=True
+        default=0, blank=True
     )
+    #Pc requirements
+    min_cpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Minimum CPU")
+    min_gpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Minimum GPU")
+    min_ram = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Minimum RAM")
+    min_storage = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Minimum Storage")
 
-
-class Order(models.Model):
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='orders')
-    quantity = models.PositiveIntegerField(default=1)
-    order_date = models.DateTimeField(auto_now_add=True)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-
-class Voucher(models.Model):
-    code = models.CharField(max_length=20, unique=True)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='vouchers')
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    expiration_date = models.DateField()
+    rec_cpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Recommended CPU")
+    rec_gpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Recommended GPU")
+    rec_ram = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Recommended RAM")
+    rec_storage = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Recommended Storage")

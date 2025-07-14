@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Game, Game_Genre, Order, Voucher
+from .models import Game, Game_Genre
 # Register your models here.
 
 

@@ -1,3 +1,33 @@
-{%extends "base.html"%}
+{% extends "base.html" %}
 
+{% block content %}
+    <div class="">
 
+        <div class="bg-red-500">
+            <h2>{{ game.title }} ({{ game.get_console_display }})</h2>
+            {% if game.image_url %}
+                <img src="{{ game.image_url }}" alt="" class="w-50 h-60 m-2">
+            {% else %}
+                <img src="{{ game.image }}" alt="">
+            {% endif %}
+            <p>Price: ${{ game.price }}</p>
+        </div>
+
+        <div>
+            <h1>trailer</h1>
+            {% if game.trailer %}
+                <iframe
+                    width="560"
+                    height="315"
+                    class="w-50 h-160"
+                    src="https://www.youtube.com/embed/{{ game.trailer|cut:'https://www.youtube.com/watch?v='|cut:'https://youtu.be/' }}"
+                    title="YouTube trailer"
+                    frameborder="0"
+                    allowfullscreen>
+                </iframe>
+            {% else %}
+                <p>No trailer available.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
