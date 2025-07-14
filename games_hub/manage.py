@@ -20,3 +20,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+from game.models import GENRE_CHOICES, Game_Genre
+for value, display in GENRE_CHOICES:
+    Game_Genre.objects.get_or_create(genre=value)

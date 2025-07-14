@@ -39,20 +39,17 @@ MIN_AGE_CHOICES = (
     (16, 16),
     (18, 18),
     )
-
+class Game_Genre(models.Model):
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES)
+    def __str__(self):
+        return self.genre
 class Game(models.Model):
     title = models.CharField(max_length=15)
     description = models.TextField()
+    genres = models.ManyToManyField(Game_Genre, related_name= 'GENRE_CHOICES')
     release_date = models.DateField()
     image = models.ImageField(upload_to='games_images', blank=True, null=True, help_text="Upload an image file")
     image_url = models.URLField(blank=True, null=True, help_text="Or provide an image URL")
-    genre = models.CharField(max_length=50, choices=GENRE_CHOICES)
-    genre2 = models.CharField(
-        max_length=50, choices=GENRE_CHOICES, null=True, blank=True, verbose_name="Secondary Genre"
-    )
-    genre3 = models.CharField(
-        max_length=50, choices=GENRE_CHOICES, null=True, blank=True, verbose_name="third Genre"
-    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     console = models.CharField(max_length=50, choices=Console_CHOICES)
     trailer = models.URLField(default='', blank=True)
@@ -64,10 +61,15 @@ class Game(models.Model):
         default=0, blank=True, null=True
     )
 
-    def discounted_price(self):
-        if self.discount:
-            return self.price * (1 - self.discount / 100)
-        return self.price
-    
-    def __str__(self):
-        return self.title
+
+class Order(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='orders')
+    quantity = models.PositiveIntegerField(default=1)
+    order_date = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+class Voucher(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='vouchers')
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    expiration_date = models.DateField()
