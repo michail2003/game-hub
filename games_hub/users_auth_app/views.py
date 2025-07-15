@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import login, logout
 
-from authentication.models import CustomUser
+from users_auth_app.models import CustomUser
 
 # Create your views here.
 
@@ -9,7 +9,8 @@ def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
             return render(request, 'base.html')
-        return render(request, 'login.html')
+        else:
+            return render(request, 'login.html')
     else:
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -17,7 +18,7 @@ def login_view(request):
         user = CustomUser.objects.filter(username=email).first()
         if user is not None and user.check_password(password):
             login(request, user)
-            return redirect('home')
+            return redirect('base')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
 
@@ -41,7 +42,7 @@ def register_view(request):
         if password != confirm_password:
             return render(request, 'register.html', {'error': 'The passwords do not match'})
 
-        user = CustomUser.objects.create_user(username=email, email=email, password=password)
+        user = CustomUser.objects.create_user(username=email, email=email, password=password, name=name, last_name=last_name)
         user.save()
 
         login(request, user)
@@ -66,4 +67,4 @@ def more_details(request):
         user.profile_picture = profile_picture
         user.save()
         
-        return redirect('home')
+        return redirect('base')
