@@ -1,30 +1,31 @@
 from django.shortcuts import redirect, render
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, authenticate, logout
 
-from users_auth_app.models import CustomUser
+from .models import CustomUser
 
-# Create your views here.
 
 def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return render(request, 'base.html')
+            return render(request, 'game.html')
         else:
             return render(request, 'login.html')
     else:
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        user = CustomUser.objects.filter(username=email).first()
-        if user is not None and user.check_password(password):
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
             login(request, user)
             return redirect('base')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
 
+
 def logout_view(request):
     logout(request)
     return render(request, 'base.html')
+
 
 def register_view(request):
     if request.method == 'GET':

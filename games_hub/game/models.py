@@ -52,3 +52,6 @@ class Game(models.Model):
     rec_gpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Recommended GPU")
     rec_ram = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Recommended RAM")
     rec_storage = models.CharField(max_length=20, default="N/A", blank=True, verbose_name="Recommended Storage")
+
+    def __str__(self):
+        return self.title
