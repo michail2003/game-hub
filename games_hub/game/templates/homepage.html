@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="flex p-4 mt-5 justify-evenly gap-4 items-center flex-wrap">
+    {%for game in games %}
+    <a href="{% url 'game_detail' game.pk %}">
+      <div class="bg-red-500">
+        <h2>{{ game.title }} ({{game.get_console_display}})</h2>
+        {% if game.image_url %}
+        <img src="{{game.image_url}}" alt="" class="w-50 h-60  m-2">
+        {% else %}
+        <img src="{{game.image}}" alt="">
+        {% endif %}
+        <p>Price: ${{ game.price }}</p>
+      </div>
+    </a>
+    {%endfor%}
+  </div>
+  {% endblock content%}

@@ -22,7 +22,6 @@ from users_auth_app import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('', views.home, name='base'),
     path('game/<int:pk>/', views.game_detail, name='game_detail'),
     path('login/', auth_views.login_view, name='login'),
     path('logout/', auth_views.logout_view, name='logout'),

@@ -126,45 +126,33 @@
             <path fill="#ffffff"
               d="M0 24C0 10.7 10.7 0 24 0L69.5 0c22 0 41.5 12.8 50.6 32l411 0c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3l-288.5 0 5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5L488 336c13.3 0 24 10.7 24 24s-10.7 24-24 24l-288.3 0c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5L24 48C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z" />
           </svg> Cart</a></li>
-      {% if user.is_authenticated %}
-        <h4> {{ user }}</h4>
-        <h4> {{ user.first_name }} </h4>
-        <h4> {{ user.last_name }} </h4>
+          {% if user.is_authenticated %}
+           <div class="relative group inline-block text-white">
+  <!-- Name container -->
+  <div class="italic font-bold px-4 py-2 bg-gray-800 rounded-t cursor-pointer">
+    <h4>{{ user.first_name }}</h4>
+    <h4>{{ user.last_name }}</h4>
+  </div>
 
-        {% for favorite_game in user.user_saved_games.all %}
-          <h1>{{ favorite_game.title }}</h1>
-        {% endfor %}
+  <!-- Logout box -->
+  <div class="absolute hidden group-hover:flex flex-col right-0 w-32 bg-white text-black shadow-lg rounded-b p-2 z-50">
+    <form method="POST" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="w-full text-left px-2 py-1 hover:bg-gray-200 rounded">Logout</button>
+    </form>
+  </div>
+</div>
 
-      {% else %}
+        {% else %}
       <div class="flex gap-4">
-        <li><a href="{%url 'register'%}" class="flex items-center gap-2">Register</a></li>
-        /
-        <li><a href="{%url 'login'%}" class="flex items-center gap-2">Login</a></li>
-      </div>
+          <li><a href="{%url 'register'%}" class="flex items-center gap-2">Register</a></li>
+          /
+          <li><a href="{%url 'login'%}" class="flex items-center gap-2">Login</a></li>
+    </div>
       {% endif %}
     </ul>
   </nav>
-
-  <!-- <div class="flex p-4 mt-5 justify-evenly gap-4 items-center flex-wrap">
-    {%for game in games %}
-    <a href="{% url 'game_detail' game.pk %}">
-      <div class="bg-red-500">
-        <h2>{{ game.title }} ({{game.get_console_display}})</h2>
-        {% if game.image_url %}
-        <img src="{{game.image_url}}" alt="" class="w-50 h-60  m-2">
-        {% else %}
-        <img src="{{game.image}}" alt="">
-        {% endif %}
-        <p>Price: ${{ game.price }}</p>
-      </div>
-    </a>
-    {%endfor%}
-  </div> -->
-
-
-  <h1>regiiiii</h1>
-  {% block content %}
-  {% endblock content%}
+  {% block content %}{% endblock content%}
 </body>
 
 </html>
