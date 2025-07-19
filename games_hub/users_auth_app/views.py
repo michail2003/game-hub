@@ -2,7 +2,6 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import login, authenticate, logout
 
 from .models import CustomUser
-from game.views import home
 def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -49,25 +48,46 @@ def register_view(request):
         user.save()
 
         login(request, user)
-        return render(request, 'homepage.html', {'message': 'User created successfully'})
+        return redirect('home')
 
 
 def more_details(request):
     if request.method == 'GET':
-        return render(request, 'userdetails.html')
+        return render(request, 'accaunt.html', {'user': request.user})
     else:
+        email = request.POST.get('email')
+        first_name = request.POST.get('name')
+        last_name = request.POST.get('last_name')
         phone_number = request.POST.get('phone_number')
         city = request.POST.get('city')
         area = request.POST.get('area')
         street = request.POST.get('street')
         profile_picture = request.FILES.get('profile_picture')
 
+        if CustomUser.objects.filter(email=email).exclude(id=request.user.id).exists():
+            return render(request, 'accaunt.html', {'error': 'Email is already taken', 'user': request.user})
+        
+        if CustomUser.objects.filter(phone_number=phone_number).exclude(id=request.user.id).exists():
+            return render(request, 'accaunt.html', {'error': 'Phone number is already taken'})
+        
+        if not first_name or not last_name:
+            return render(request, 'accaunt.html', {'error': 'First and last name are required'})
+
         user = request.user
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
         user.phone_number = phone_number
         user.city = city
         user.area = area
         user.street = street
-        user.profile_picture = profile_picture
+
+        if profile_picture:
+            user.profile_picture = profile_picture
+
         user.save()
-        
         return redirect('home')
+
+
+def orders_view(request):
+    return render(request, 'orders.html')

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{{user.profile_picture}}
   <div class="flex p-4 mt-5 justify-evenly gap-4 items-center flex-wrap">
     {%for game in games %}
     <a href="{% url 'game_detail' game.pk %}">
@@ -11,7 +12,7 @@
         {% else %}
         <img src="{{game.image}}" alt="">
         {% endif %}
-        <p>Price: ${{ game.price }}</p>
+        <p>Price: ${{ game.discounted_price}}</p>
       </div>
     </a>
     {%endfor%}

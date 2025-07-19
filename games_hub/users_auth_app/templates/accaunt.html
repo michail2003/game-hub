@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10">
+    <h2 class="text-3xl font-bold mb-6 text-white text-center">Account Settings</h2>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'accaunt' %}" class="bg-white p-8 rounded-xl shadow-md space-y-6">
+        {% csrf_token %}
+        
+        {% if error %}
+            <p class="text-red-600 font-semibold text-center">{{ error }}</p>
+        {% endif %}
+
+        <!-- Profile Picture -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Profile Picture</label>
+            <input type="file" name="profile_picture" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- First Name -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">First Name</label>
+            <input type="text" name="name" value="{{ user.first_name }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Last Name -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Last Name</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Email</label>
+            <input type="email" name="email" value="{{ user.email }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Phone -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Phone</label>
+            <input type="tel" name="phone_number" value="{{ user.phone_number }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- City -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">City</label>
+            <input type="text" name="city" value="{{ user.city }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Area -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Area</label>
+            <input type="text" name="area" value="{{ user.area }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Street -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Street</label>
+            <input type="text" name="street" value="{{ user.street }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-300">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock content %}

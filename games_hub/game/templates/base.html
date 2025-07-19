@@ -129,13 +129,23 @@
           {% if user.is_authenticated %}
            <div class="relative group inline-block text-white">
   <!-- Name container -->
-  <div class="italic font-bold px-4 py-2 bg-gray-800 rounded-t cursor-pointer">
+  <div class="italic font-bold px-4 py-2 bg-gray-800 rounded-t cursor-pointer flex gap-2">
     <h4>{{ user.first_name }}</h4>
     <h4>{{ user.last_name }}</h4>
   </div>
 
   <!-- Logout box -->
   <div class="absolute hidden group-hover:flex flex-col right-0 w-32 bg-white text-black shadow-lg rounded-b p-2 z-50">
+    
+    <a href="{% url 'accaunt' %}" class="px-2 py-1 hover:bg-gray-200 rounded block">
+    Manage Your Account
+  </a>
+
+  <!-- Orders Link -->
+  <a href="{% url 'orders' %}" class="px-2 py-1 hover:bg-gray-200 rounded block">
+    Orders
+  </a>
+
     <form method="POST" action="{% url 'logout' %}">
       {% csrf_token %}
       <button type="submit" class="w-full text-left px-2 py-1 hover:bg-gray-200 rounded">Logout</button>

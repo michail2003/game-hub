@@ -10,7 +10,7 @@
             {% else %}
                 <img src="{{ game.image }}" alt="">
             {% endif %}
-            <p>Price: ${{ game.price }}</p>
+            <p>Price: ${{ game.discounted_price }}</p>
         </div>
 
         <div>
@@ -30,4 +30,19 @@
             {% endif %}
         </div>
     </div>
+    <div>
+       {% if game.console == "PC" %}
+            <div>
+                <h1>Specs</h1>
+                Minimum CPU: {{ game.min_cpu }}<br>
+                Minimum RAM: {{ game.min_ram }}<br>
+                Minimum GPU: {{ game.min_gpu }}<br>
+                Minimum Storage: {{ game.min_storage }}<br>
+                Recommended CPU: {{ game.rec_cpu }}<br>
+                Recommended RAM: {{ game.rec_ram }}<br>
+                Recommended GPU: {{ game.rec_gpu }}<br>
+                Recommended Storage: {{ game.rec_storage }}<br>
+                
+            </div>
+{% endif %}
 {% endblock %}
