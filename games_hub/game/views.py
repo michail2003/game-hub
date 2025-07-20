@@ -20,11 +20,15 @@ def game_detail(request, pk):
     return render(request, 'game.html', {'game': game, 'genres': genres})
    
 def view_cart(request):
+    if not request.user.is_authenticated:
+        return render(request, 'cart.html')
+    
     cart_items = CartItem.objects.filter(user=request.user)
-    total_price = sum(item.game.price * item.quantity for item in cart_items)
-    return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
+    return render(request, 'cart.html', {'cart_items': cart_items})
 
 def add_to_cart(request, pk):
+    if not request.user.is_authenticated:
+        return render(request, 'cart.html')
     game = Game.objects.get(id=pk)
     cart_item, created = CartItem.objects.get_or_create(game=game,user=request.user)
     cart_item.quantity += 1
