@@ -51,10 +51,13 @@ def register_view(request):
         return redirect('home')
 
 
+from django.contrib.auth import login
+
 def more_details(request):
     if request.method == 'GET':
         return render(request, 'accaunt.html', {'user': request.user})
     else:
+        user = request.user
         email = request.POST.get('email')
         first_name = request.POST.get('name')
         last_name = request.POST.get('last_name')
@@ -63,17 +66,26 @@ def more_details(request):
         area = request.POST.get('area')
         street = request.POST.get('street')
         profile_picture = request.FILES.get('profile_picture')
+        new_password = request.POST.get('new_password')
+        confirm_new_password = request.POST.get('confirm_new_password')
 
-        if CustomUser.objects.filter(email=email).exclude(id=request.user.id).exists():
-            return render(request, 'accaunt.html', {'error': 'Email is already taken', 'user': request.user})
+        if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
+            return render(request, 'accaunt.html', {'error': 'Email is already taken', 'user': user})
         
-        if CustomUser.objects.filter(phone_number=phone_number).exclude(id=request.user.id).exists():
-            return render(request, 'accaunt.html', {'error': 'Phone number is already taken'})
+        if CustomUser.objects.filter(phone_number=phone_number).exclude(id=user.id).exists():
+            return render(request, 'accaunt.html', {'error': 'Phone number is already taken', 'user': user})
         
         if not first_name or not last_name:
-            return render(request, 'accaunt.html', {'error': 'First and last name are required'})
+            return render(request, 'accaunt.html', {'error': 'First and last name are required', 'user': user})
 
-        user = request.user
+        if new_password and confirm_new_password:
+            if new_password != confirm_new_password:
+                return render(request, 'accaunt.html', {'error': 'New passwords do not match', 'user': user})
+            elif user.check_password(new_password):
+                return render(request, 'accaunt.html', {'error': 'New password cannot be the same as the old password', 'user': user})
+            else:
+                user.set_password(new_password)
+
         user.email = email
         user.first_name = first_name
         user.last_name = last_name
@@ -86,7 +98,11 @@ def more_details(request):
             user.profile_picture = profile_picture
 
         user.save()
+
+        login(request, user)
+
         return redirect('home')
+
 
 
 def orders_view(request):
