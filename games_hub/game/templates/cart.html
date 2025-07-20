@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md">
+  <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
+
+  <ul class="space-y-4">
+    {% for item in cart_items %}
+      <li class="flex justify-between items-center border-b pb-2">
+        <div>
+          {{ item.game.title }} × {{ item.quantity }}
+        </div>
+
+        <div class="flex gap-2">
+          <!-- Decrease -->
+          <form method="post" action="{% url 'decrease_quantity' item.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 rounded">−</button>
+          </form>
+
+          <!-- Increase -->
+          <form method="post" action="{% url 'increase_quantity' item.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-2 rounded">+</button>
+          </form>
+
+          <!-- Remove -->
+          <form method="post" action="{% url 'remove_from_cart' item.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+              Remove
+            </button>
+          </form>
+        </div>
+        <div class="text-lg font-semibold">
+          
+          {{item.total_price|floatformat:2}}
+        </div>
+      </li>
+    {% empty %}
+      <li>Your cart is empty.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

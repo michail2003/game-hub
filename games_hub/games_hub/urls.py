@@ -28,4 +28,9 @@ urlpatterns = [
     path('register/', auth_views.register_view, name='register'),
     path('accaunt/', auth_views.more_details, name='accaunt'),
     path('orders/', auth_views.orders_view, name='orders'),
+    path('cart/', views.view_cart, name='view_cart'),
+    path('add/<int:pk>/', views.add_to_cart, name='add_to_cart'),
+    path('remove/<int:pk>/', views.remove_from_cart, name='remove_from_cart'),
+    path('increase/<int:pk>/', views.increase_quantity, name='increase_quantity'),
+    path('decrease/<int:pk>/', views.decrease_quantity, name='decrease_quantity'),
 ]

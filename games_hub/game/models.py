@@ -1,6 +1,10 @@
 
 from django.db import models
 
+from django.conf import settings
+
+
+
 # Create your models here.
 Console_CHOICES = (
     ('Ps3', 'PlayStation 3'),
@@ -44,6 +48,7 @@ class Game(models.Model):
         max_digits=4, decimal_places=2,
         default=0.0, blank=True
     )
+
     #Pc requirements
     min_cpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Minimum CPU")
     min_gpu = models.CharField(max_length=100, default="N/A", blank=True, verbose_name="Minimum GPU")
@@ -60,12 +65,18 @@ class Game(models.Model):
     
     def discounted_price(self):
         if self.discount > 0:
-            price = self.price * (1 - self.discount / 100)
+            price = (self.price * (1 - self.discount / 100))
         else:
             price = self.price
             
-        price_str = f"{price:.2f}"
-        if price_str.endswith(".00"):
-            price_str = price_str[:-3]
+        return price
 
-        return price_str
+class CartItem(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    def total_price(self):
+        return self.game.discounted_price() * self.quantity  
+    def __str__(self):
+        return f'{self.quantity} x {self.product.name}'
+

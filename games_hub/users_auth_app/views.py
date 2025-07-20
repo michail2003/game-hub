@@ -70,19 +70,19 @@ def more_details(request):
         confirm_new_password = request.POST.get('confirm_new_password')
 
         if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
-            return render(request, 'accaunt.html', {'error': 'Email is already taken', 'user': user})
+            return render(request, 'accaunt.html', {'error': 'Email is already taken'})
         
         if CustomUser.objects.filter(phone_number=phone_number).exclude(id=user.id).exists():
-            return render(request, 'accaunt.html', {'error': 'Phone number is already taken', 'user': user})
+            return render(request, 'accaunt.html', {'error': 'Phone number is already taken'})
         
         if not first_name or not last_name:
-            return render(request, 'accaunt.html', {'error': 'First and last name are required', 'user': user})
+            return render(request, 'accaunt.html', {'error': 'First and last name are required'})
 
         if new_password and confirm_new_password:
             if new_password != confirm_new_password:
-                return render(request, 'accaunt.html', {'error': 'New passwords do not match', 'user': user})
+                return render(request, 'accaunt.html', {'error': 'New passwords do not match'})
             elif user.check_password(new_password):
-                return render(request, 'accaunt.html', {'error': 'New password cannot be the same as the old password', 'user': user})
+                return render(request, 'accaunt.html', {'error': 'New password cannot be the same as the old password'})
             else:
                 user.set_password(new_password)
 

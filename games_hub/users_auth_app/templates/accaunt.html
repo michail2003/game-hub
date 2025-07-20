@@ -8,7 +8,7 @@
         {% csrf_token %}
         
         {% if error %}
-            <p class="text-red-600 font-semibold text-center">{{ error }}</p>
+            <p class="text-red-600 font-semibold text-center">{{ error }},{{user}}</p>
         {% endif %}
 
         <!-- Profile Picture -->
@@ -46,7 +46,7 @@
             <label class="block text-black">Confirm New Password</label>
             <input type="password" name="confirm_new_password" class="w-full rounded px-4 py-2 text-black">
         </div>
-        
+
         <!-- Phone -->
         <div>
             <label class="block text-gray-700 font-medium mb-1">Phone</label>

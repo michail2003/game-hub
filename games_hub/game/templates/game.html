@@ -10,7 +10,7 @@
             {% else %}
                 <img src="{{ game.image }}" alt="">
             {% endif %}
-            <p>Price: ${{ game.discounted_price }}</p>
+            <p>Price: ${{ game.discounted_price|floatformat:2 }}</p>
         </div>
 
         <div>
