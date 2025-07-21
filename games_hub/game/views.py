@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Game, Game_Genre, CartItem
+from users_auth_app.models import Order
 # Create your views here.
 def home(request):
     games = Game.objects.all()
@@ -24,7 +25,8 @@ def view_cart(request):
         return render(request, 'cart.html')
     
     cart_items = CartItem.objects.filter(user=request.user)
-    return render(request, 'cart.html', {'cart_items': cart_items})
+    total = sum(item.total_price() for item in cart_items)
+    return render(request, 'cart.html', {'cart_items': cart_items, 'total': total})
 
 def add_to_cart(request, pk):
     if not request.user.is_authenticated:
@@ -53,4 +55,33 @@ def decrease_quantity(request, pk):
         item.save()
     else:
         item.delete()  # Optionally remove if it reaches 0
+    return redirect('view_cart')
+
+def buy_now(request):
+    cart_items = CartItem.objects.filter(user=request.user)
+    
+    if not cart_items.exists():
+        return redirect('view_cart')  # Or show message: cart is empty
+
+    # Create the order
+    order = Order.objects.create(user=request.user)
+
+    # Add all games to the order
+    for item in cart_items:
+        order.game.add(item.game)
+
+    # Calculate total using sum()
+    total = sum(item.total_price() for item in cart_items)
+    order.total_price = total
+    order.save()
+
+    # Clear the cart
+    cart_items.delete()
+
+    return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
+
+
+def delete_all_cart_items(request):
+    if request.method == "POST":
+        CartItem.objects.filter(user=request.user).delete()
     return redirect('view_cart')

@@ -35,4 +35,5 @@ class Order(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     order_status = models.CharField(max_length=50, choices=status, default="pending")
     order_date = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
