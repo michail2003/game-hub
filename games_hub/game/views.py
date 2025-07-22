@@ -85,3 +85,10 @@ def delete_all_cart_items(request):
     if request.method == "POST":
         CartItem.objects.filter(user=request.user).delete()
     return redirect('view_cart')
+
+def view_orders(request):
+    if not request.user.is_authenticated:
+        return render(request, 'orders.html') # Redirect to login if not authenticated
+
+    orders = Order.objects.filter(user=request.user)
+    return render(request, 'orders.html', {'orders': orders})

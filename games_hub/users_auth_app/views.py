@@ -104,6 +104,3 @@ def more_details(request):
         return redirect('home')
 
 
-
-def orders_view(request):
-    return render(request, 'orders.html')
