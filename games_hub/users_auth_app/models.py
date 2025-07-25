@@ -1,7 +1,6 @@
 import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from game.models import Game
 
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=255, unique=True)
@@ -30,7 +29,7 @@ class Order(models.Model):
     
     order_id = models.CharField(max_length=10, default=generate_order_code, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    game = models.ManyToManyField(Game)
+    game = models.ManyToManyField("game.Game")
     order_date = models.DateTimeField(auto_now_add=True)
     order_status = models.CharField(max_length=50, choices=status, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -38,3 +37,21 @@ class Order(models.Model):
     def __str__(self):
         return f"{self.order_id} by {self.user.email} - Status: {self.order_status}"
 
+class Voucher(models.Model):
+
+    def generate_voucher_code():
+            return uuid.uuid4().hex[:5].upper()
+        
+    code = models.CharField(max_length=20, unique=True)
+    gift_code = models.CharField(max_length=10, default=generate_voucher_code, unique=True,null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    games= models.ManyToManyField("game.Game")
+    expiration_date = models.DateTimeField()
+    usage_limit = models.PositiveIntegerField(default=1)
+    used_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_percentage}% off"

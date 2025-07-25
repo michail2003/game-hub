@@ -103,4 +103,4 @@ def more_details(request):
 
         return redirect('home')
 
-
+ 
