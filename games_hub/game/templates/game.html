@@ -1,48 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="">
+<div class="max-w-4xl mx-auto mt-10 px-4">
 
-        <div class="bg-red-500">
-            <h2>{{ game.title }} ({{ game.get_console_display }})</h2>
+    <!-- Game Info Card -->
+    <div class="bg-gray-800 text-white rounded-2xl shadow-lg overflow-hidden mb-10 p-6">
+        <h2 class="text-3xl font-bold mb-4">
+            {{ game.title }} <span class="text-sm text-gray-300">({{ game.get_console_display }})</span>
+        </h2>
+
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {% if game.image_url %}
-                <img src="{{ game.image_url }}" alt="" class="w-50 h-60 m-2">
+                <img src="{{ game.image_url }}" alt="{{ game.title }}" class="w-60 h-72 object-cover rounded-xl shadow" />
             {% else %}
-                <img src="{{ game.image }}" alt="">
+                <img src="{{ game.image }}" alt="{{ game.title }}" class="w-60 h-72 object-cover rounded-xl shadow" />
             {% endif %}
-            <p>Price: ${{ game.discounted_price|floatformat:2 }}</p>
+            
+                <div>
+                    <label for="voucher" class="block text-sm font-medium text-gray-300 mb-2">
+                        Voucher <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="voucher"
+                        name="voucher" 
+                        class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70"
+                        placeholder="Enter voucher code"
+                    >
+                </div>
+            
+            <div class="text-lg">
+                <p class="mt-2 font-semibold text-green-400">Price: ${{ game.discounted_price|floatformat:2 }}</p>
+            </div>
         </div>
+    </div>
 
-        <div>
-            <h1>trailer</h1>
-            {% if game.trailer %}
+    <!-- Trailer Section -->
+    <div class="bg-gray-900 text-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 class="text-2xl font-semibold mb-4">Trailer</h3>
+        {% if game.trailer %}
+            <div class="aspect-w-16 aspect-h-9 w-full">
                 <iframe
-                    width="560"
-                    height="315"
-                    class="w-50 h-160"
+                    class="w-full h-64 rounded-xl"
                     src="https://www.youtube.com/embed/{{ game.trailer|cut:'https://www.youtube.com/watch?v='|cut:'https://youtu.be/' }}"
                     title="YouTube trailer"
                     frameborder="0"
                     allowfullscreen>
                 </iframe>
-            {% else %}
-                <p>No trailer available.</p>
-            {% endif %}
-        </div>
-    </div>
-    <div>
-       {% if game.console == "PC" %}
-            <div>
-                <h1>Specs</h1>
-                Minimum CPU: {{ game.min_cpu }}<br>
-                Minimum RAM: {{ game.min_ram }}<br>
-                Minimum GPU: {{ game.min_gpu }}<br>
-                Minimum Storage: {{ game.min_storage }}<br>
-                Recommended CPU: {{ game.rec_cpu }}<br>
-                Recommended RAM: {{ game.rec_ram }}<br>
-                Recommended GPU: {{ game.rec_gpu }}<br>
-                Recommended Storage: {{ game.rec_storage }}<br>
-                
             </div>
-{% endif %}
+        {% else %}
+            <p class="text-gray-300">No trailer available.</p>
+        {% endif %}
+    </div>
+
+    <!-- PC Specs -->
+    {% if game.console == "PC" %}
+        <div class="bg-gray-800 text-white rounded-2xl shadow-lg p-6">
+            <h3 class="text-2xl font-semibold mb-4">PC Specifications</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-semibold underline mb-2">Minimum:</h4>
+                    <p>CPU: {{ game.min_cpu }}</p>
+                    <p>RAM: {{ game.min_ram }}</p>
+                    <p>GPU: {{ game.min_gpu }}</p>
+                    <p>Storage: {{ game.min_storage }}</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold underline mb-2">Recommended:</h4>
+                    <p>CPU: {{ game.rec_cpu }}</p>
+                    <p>RAM: {{ game.rec_ram }}</p>
+                    <p>GPU: {{ game.rec_gpu }}</p>
+                    <p>Storage: {{ game.rec_storage }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
