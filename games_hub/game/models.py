@@ -73,7 +73,7 @@ class Game(models.Model):
 
 class CartItem(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=0)
+    quantity = models.PositiveIntegerField(default=1)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     def total_price(self):
         return self.game.discounted_price() * self.quantity  

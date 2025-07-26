@@ -6,8 +6,9 @@ admin.site.register(Order)
 
 
 class VoucherAdmin(admin.ModelAdmin):
-    list_display = ('code', 'discount', 'user', 'created_at', 'expiration_date', 'usage_limit', 'used_count')
-    list_filter = ('created_at',)  # ✅ Enables filtering by date in admin
+    list_display = ('code', 'discount', 'created_at', 'expiration_date', 'usage_limit', 'used_count')
+    list_filter = ('created_at','code')  # ✅ Enables filtering by date in admin
     readonly_fields = ('used_count', 'created_at')  # Prevent manual changes
     actions = ['delete_selected']  # Default action for bulk delete
+    autocomplete_fields = ['games']
 admin.site.register(Voucher, VoucherAdmin)

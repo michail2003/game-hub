@@ -21,18 +21,31 @@ def home(request):
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     genres = Game_Genre.objects.all()
-    price = game.discounted_price()
-    error = None  # Always define this before using it
+    base_price = game.discounted_price()
+    price = base_price  # This will be updated if voucher is applied
+    error = None
 
     if request.method == "POST":
         voucher_code = request.POST.get("voucher")
+        applying = request.POST.get("apply-voucher")
+        cart_add = request.POST.get("AddingToCart")
+
         if voucher_code:
             voucher_qs = Voucher.objects.filter(code=voucher_code, expiration_date__gte=timezone.now())
             if voucher_qs.exists():
                 discount = voucher_qs.first().discount
-                price *= (1 - discount / 100)
+                if applying:
+                    # Just apply the voucher
+                    price = base_price * (1 - discount / 100)
+                    print(f"Voucher applied: {discount}% off -> {price}")
             else:
                 error = "Invalid or expired voucher code"
+        if cart_add:
+            if request.user.is_authenticated:
+                CartItem.objects.create(game=game, user=request.user, total_price=price)
+                redirect("cart_view")
+            else:
+                redirect("login")
 
     return render(request, 'game.html', {
         'game': game,
@@ -40,6 +53,7 @@ def game_detail(request, pk):
         'price': price,
         'error': error,
     })
+
 
    
 def view_cart(request):
@@ -54,8 +68,7 @@ def add_to_cart(request, pk):
     if not request.user.is_authenticated:
         return render(request, 'cart.html')
     game = Game.objects.get(id=pk)
-    cart_item, created = CartItem.objects.get_or_create(game=game,user=request.user)
-    cart_item.quantity += 1
+    cart_item = CartItem.objects.create(game=game, user=request.user)
     cart_item.save()
     return redirect('view_cart')
 
