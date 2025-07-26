@@ -42,8 +42,7 @@ class Voucher(models.Model):
     def generate_voucher_code():
             return uuid.uuid4().hex[:5].upper()
         
-    code = models.CharField(max_length=20, unique=True)
-    gift_code = models.CharField(max_length=10, default=generate_voucher_code, unique=True,null=True, blank=True)
+    code = models.CharField(max_length=10, default=generate_voucher_code, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True)
     discount = models.DecimalField(max_digits=5, decimal_places=2)
     games= models.ManyToManyField("game.Game")
@@ -54,4 +53,4 @@ class Voucher(models.Model):
 
 
     def __str__(self):
-        return f"{self.code} - {self.discount_percentage}% off"
+        return f"{self.code} - {self.discount}% off"

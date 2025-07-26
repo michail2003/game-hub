@@ -1,6 +1,7 @@
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Game, Game_Genre, CartItem
-from users_auth_app.models import Order
+from users_auth_app.models import Order, Voucher
 # Create your views here.
 def home(request):
     games = Game.objects.all()
@@ -15,10 +16,31 @@ def home(request):
         games = games.filter(title__contains=searched_word)
     return render(request, 'homepage.html', {'games':games,'genres': genres})
 
+
+
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     genres = Game_Genre.objects.all()
-    return render(request, 'game.html', {'game': game, 'genres': genres})
+    price = game.discounted_price()
+    error = None  # Always define this before using it
+
+    if request.method == "POST":
+        voucher_code = request.POST.get("voucher")
+        if voucher_code:
+            voucher_qs = Voucher.objects.filter(code=voucher_code, expiration_date__gte=timezone.now())
+            if voucher_qs.exists():
+                discount = voucher_qs.first().discount
+                price *= (1 - discount / 100)
+            else:
+                error = "Invalid or expired voucher code"
+
+    return render(request, 'game.html', {
+        'game': game,
+        'genres': genres,
+        'price': price,
+        'error': error,
+    })
+
    
 def view_cart(request):
     if not request.user.is_authenticated:
