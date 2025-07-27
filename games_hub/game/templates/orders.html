@@ -12,7 +12,7 @@
       <ul class="space-y-4">
         {% for item in order.items.all %}
           <li class="grid grid-cols-4 items-center gap-4 border-b pb-4">
-            <div class="col-span-3 font-medium">{{ item.game_title }} x{{item.quantity}} ({{item.item_price}})</div>
+            <div class="col-span-3 font-medium">{{ item.game.title }} x{{item.quantity}} ({{item.item_price}})</div>
             <div class="col-span-1 font-semibold text-right">€{{ item.price|floatformat:2 }}</div>
           </li>
         {% endfor %}

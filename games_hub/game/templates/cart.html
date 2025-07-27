@@ -10,9 +10,7 @@
     {% if message %}
     <div class="bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg shadow-md mb-6">
         <p class="font-semibold">{{ message }}</p>
-        {% if total %}
         <p class="mt-1 text-sm">Total paid: €{{ total }}</p>
-        {% endif %}
     </div>
     {% endif %}
 

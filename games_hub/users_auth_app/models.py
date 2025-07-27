@@ -32,6 +32,7 @@ class Order(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     order_status = models.CharField(max_length=50, choices=status, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_library_synced = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"{self.order_id} by {self.user.email} - Status: {self.order_status}"
@@ -39,10 +40,11 @@ class Order(models.Model):
 class OrderItem(models.Model):
     
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
-    game_title = models.CharField(max_length=100)
+    game = models.ForeignKey("game.Game",on_delete=models.CASCADE, null=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     item_price = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    photo = models.ImageField
 
 class Voucher(models.Model):
 
@@ -61,3 +63,10 @@ class Voucher(models.Model):
 
     def __str__(self):
         return f"{self.code} - {self.discount}% off"
+    
+class gamelibrary(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    added = models.DateTimeField(auto_now_add=True)
+    game = models.ForeignKey('game.Game', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(null=True)
+    price_bought = models.DecimalField(max_digits=10, decimal_places=2)

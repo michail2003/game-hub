@@ -104,7 +104,7 @@ def buy_now(request):
         price = item.total_price()
         OrderItem.objects.create(
             order=order,
-            game_title=item.game.title,
+            game=item.game,
             quantity=item.quantity,
             price=price,
             item_price = item.game_price,
@@ -118,7 +118,7 @@ def buy_now(request):
     # Now safely delete cart items
     cart_items.delete()
 
-    return redirect('view_orders')  # Redirect to orders list or confirmation page
+    return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
 
 
 def delete_all_cart_items(request):

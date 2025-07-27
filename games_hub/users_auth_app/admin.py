@@ -6,7 +6,7 @@ admin.site.register(CustomUser)
 class OrderItemInline(admin.TabularInline):  # Or use admin.StackedInline if you prefer
     model = OrderItem
     extra = 0  # Don't show extra blank rows
-    readonly_fields = ['game_title', 'quantity', 'price', 'item_price']  # Make them readonly if you prefer
+    readonly_fields = ['quantity', 'price', 'item_price']  # Make them readonly if you prefer
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['order_id', 'user', 'order_status', 'order_date']
     list_filter = ['order_status', 'order_date','order_id']

@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import login, authenticate, logout
+from .models import CustomUser,OrderItem,gamelibrary,Order
 
-from .models import CustomUser
 def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -103,4 +103,30 @@ def more_details(request):
 
         return redirect('home')
 
- 
+def library(request):
+    unsynced_orders = Order.objects.filter(user=request.user, is_library_synced=False)
+    games_to_add = OrderItem.objects.filter(order__in=unsynced_orders)
+
+    for item in games_to_add:
+        library_item = gamelibrary.objects.filter(user=request.user, game=item.game).first()
+
+        if library_item:
+            library_item.quantity += item.quantity
+            library_item.price_bought = item.price
+            library_item.save()
+        else:
+            gamelibrary.objects.create(
+                user=request.user,
+                game=item.game,
+                quantity=item.quantity,
+                price_bought=item.price
+            )
+
+    
+    unsynced_orders.update(is_library_synced=True)
+
+   
+    library_games = gamelibrary.objects.filter(user=request.user)
+    return render(request, 'library.html', {'games': library_games})
+
+    
