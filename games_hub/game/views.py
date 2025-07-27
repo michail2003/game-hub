@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Game, Game_Genre, CartItem
-from users_auth_app.models import Order, Voucher
+from users_auth_app.models import Order, Voucher,OrderItem
 # Create your views here.
 def home(request):
     games = Game.objects.all()
@@ -21,8 +21,7 @@ def home(request):
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     genres = Game_Genre.objects.all()
-    base_price = game.discounted_price()
-    price = base_price  # This will be updated if voucher is applied
+    price = game.discounted_price()
     error = None
 
     if request.method == "POST":
@@ -35,9 +34,8 @@ def game_detail(request, pk):
             if voucher_qs.exists():
                 discount = voucher_qs.first().discount
                 if applying:
-                    # Just apply the voucher
-                    price = base_price * (1 - discount / 100)
-                    print(f"Voucher applied: {discount}% off -> {price}")
+                    Tprice = price *(1 - discount / 100)
+                    return redirect('home')
             else:
                 error = "Invalid or expired voucher code"
         if cart_add:
@@ -94,26 +92,35 @@ def decrease_quantity(request, pk):
 
 def buy_now(request):
     cart_items = CartItem.objects.filter(user=request.user)
-    
+
     if not cart_items.exists():
         return redirect('view_cart')  # Or show message: cart is empty
 
     # Create the order
     order = Order.objects.create(user=request.user)
 
-    # Add all games to the order
-    for item in cart_items:
-        order.game.add(item.game)
+    total = 0
 
-    # Calculate total using sum()
-    total = sum(item.total_price() for item in cart_items)
+    # Create OrderItem for each CartItem
+    for item in cart_items:
+        price = item.total_price()
+        OrderItem.objects.create(
+            order=order,
+            game_title=item.game.title,
+            quantity=item.quantity,
+            price=price,
+            item_price = item.game_price,
+        )
+        total += price
+
+    # Update total price
     order.total_price = total
     order.save()
 
-    # Clear the cart
+    # Now safely delete cart items
     cart_items.delete()
 
-    return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
+    return redirect('view_orders')  # Redirect to orders list or confirmation page
 
 
 def delete_all_cart_items(request):
@@ -124,6 +131,6 @@ def delete_all_cart_items(request):
 def view_orders(request):
     if not request.user.is_authenticated:
         return render(request, 'orders.html') # Redirect to login if not authenticated
-
+    
     orders = Order.objects.filter(user=request.user)
     return render(request, 'orders.html', {'orders': orders})

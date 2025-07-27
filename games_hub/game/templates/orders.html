@@ -1,26 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 {% if not user.is_authenticated %}
-    <div class="bg-yellow-100 text-yellow-800 border border-yellow-300 p-4 rounded mb-6">
-      You need to <a href="{% url 'login' %}" class="underline text-blue-600">log in</a> to add or view items in your cart.
-    </div>
-  {% else %}
+  <div class="bg-yellow-100 text-yellow-800 border border-yellow-300 p-4 rounded mb-6">
+    You need to <a href="{% url 'login' %}" class="underline text-blue-600">log in</a> to view your orders.
+  </div>
+{% else %}
   {% for order in orders %}
     <div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mb-6">
       <h1 class="text-2xl font-bold mb-4">Order #{{ order.order_id }}</h1>
       <p class="text-sm text-gray-600 mb-2">Placed on: {{ order.order_date|date:"F j, Y, g:i a" }}</p>
       <ul class="space-y-4">
+        {% for item in order.items.all %}
           <li class="grid grid-cols-4 items-center gap-4 border-b pb-4">
-            <div class="col-span-1 font-medium">{{ order.game.title }}</div>
-            <div class="col-span-3 text-right font-semibold text-gray-700">€{{ order.game.total_price|floatformat:2 }}</div>
+            <div class="col-span-3 font-medium">{{ item.game_title }} x{{item.quantity}} ({{item.item_price}})</div>
+            <div class="col-span-1 font-semibold text-right">€{{ item.price|floatformat:2 }}</div>
           </li>
+        {% endfor %}
       </ul>
-      <p class="mt-4 font-semibold">Total: €{{ order.total_price|floatformat:2 }}</p>
+      <p class="mt-4 font-semibold text-right">Total: €{{ order.total_price|floatformat:2 }}</p>
     </div>
   {% empty %}
     <div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md">
       <p>You have no orders yet.</p>
     </div>
   {% endfor %}
-  {% endif %}
+{% endif %}
 {% endblock %}
