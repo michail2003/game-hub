@@ -34,22 +34,20 @@ def game_detail(request, pk):
             if voucher_qs.exists():
                 discount = voucher_qs.first().discount
                 if applying:
-                    Tprice = price *(1 - discount / 100)
-                    return redirect('home')
+                    voucher_price = price * (1 - discount / 100)
+                    return render(request, 'game.html',{"price":voucher_price,'game':game})
             else:
                 error = "Invalid or expired voucher code"
         if cart_add:
-            if request.user.is_authenticated:
-                CartItem.objects.create(game=game, user=request.user, total_price=price)
-                redirect("cart_view")
-            else:
-                redirect("login")
+                CartItem.objects.create(game=game, user=request.user, price=price)
+
 
     return render(request, 'game.html', {
         'game': game,
         'genres': genres,
         'price': price,
         'error': error,
+
     })
 
 
