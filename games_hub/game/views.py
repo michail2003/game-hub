@@ -1,7 +1,13 @@
+from django.core.mail import EmailMessage
+from io import BytesIO
+from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Game, Game_Genre, CartItem
 from users_auth_app.models import Order, Voucher,OrderItem
+from django.core.mail import send_mail
+from reportlab.lib.pagesizes import A5
+from reportlab.pdfgen import canvas
 # Create your views here.
 def home(request):
     games = Game.objects.all()
@@ -88,6 +94,45 @@ def decrease_quantity(request, pk):
         item.delete()  # Optionally remove if it reaches 0
     return redirect('view_cart')
 
+def order_mail_invoice(request,order):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A5)
+    width, height = A5
+
+    c.setFont("Helvetica", 20)
+    title = "Faturë Tatimore"
+    title_width = c.stringWidth(title, "Helvetica", 20)
+    c.drawString((width - title_width) / 2, height - 50, title)
+
+    y = height - 120
+    items = OrderItem.objects.filter(order=order)
+
+    for item in items:
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, y, f"{item.game.title}")
+        y -= 20
+
+        c.setFont("Helvetica", 12)
+        c.drawString(50, y, f"{item.quantity} cope X {item.item_price:.2f} $")
+        c.drawString(350, y, f"{item.price:.2f} $")
+        y -= 30
+
+        c.drawString(50, y, '-' * 60)
+        y -= 30
+
+    c.drawString(280, y, f"Total Price: {order.total_price:.2f} $")
+    c.save()
+    buffer.seek(0)
+    email = EmailMessage(
+    subject=f'Your order with ID {order.order_id}',
+    body=f'Hello Mr/Mrs. {order.user.first_name} {order.user.last_name},\n\nYour order with ID {order.order_id} and total price {order.total_price:.2f} $ will be delivered soon.\n\nYour invoice is attached.',
+    from_email=settings.EMAIL_HOST_USER,
+    to=[order.user.email],
+)
+
+    email.attach(f'Invoice_{order.order_id}.pdf', buffer.read(), 'application/pdf')
+    email.send()
+
 def buy_now(request):
     cart_items = CartItem.objects.filter(user=request.user)
 
@@ -96,6 +141,7 @@ def buy_now(request):
 
     # Create the order
     order = Order.objects.create(user=request.user)
+    
 
     total = 0
 
@@ -114,7 +160,7 @@ def buy_now(request):
     # Update total price
     order.total_price = total
     order.save()
-
+    order_mail_invoice(request,order)
     # Now safely delete cart items
     cart_items.delete()
 
