@@ -70,3 +70,10 @@ class gamelibrary(models.Model):
     game = models.ForeignKey('game.Game', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(null=True)
     price_bought = models.DecimalField(max_digits=10, decimal_places=2)
+    count = models.IntegerField(null=True)
+
+    def update_total_games(self):
+        library = gamelibrary.objects.filter(user=self.user)
+        total = sum(item.quantity or 0 for item in library)
+        self.count = total
+        self.save()

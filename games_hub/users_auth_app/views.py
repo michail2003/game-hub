@@ -127,6 +127,7 @@ def library(request):
 
    
     library_games = gamelibrary.objects.filter(user=request.user)
+    print(library_games.count())
     return render(request, 'library.html', {'games': library_games})
 
     
