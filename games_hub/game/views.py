@@ -20,8 +20,7 @@ def home(request):
     searched_word = request.GET.get('search')
     if searched_word:
         games = games.filter(title__contains=searched_word)
-    item_count = CartItem.objects.filter(user=request.user).count()
-    return render(request, 'homepage.html', {'games':games,'genres': genres,'cart_items':item_count})
+    return render(request, 'homepage.html', {'games':games,'genres': genres})
 
 
 
@@ -29,32 +28,16 @@ def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     genres = Game_Genre.objects.all()
     price = game.discounted_price()
-    error = None
 
-    if request.method == "POST":
-        voucher_code = request.POST.get("voucher")
-        applying = request.POST.get("apply-voucher")
-        cart_add = request.POST.get("AddingToCart")
-
-        if voucher_code:
-            voucher_qs = Voucher.objects.filter(code=voucher_code, expiration_date__gte=timezone.now())
-            if voucher_qs.exists():
-                discount = voucher_qs.first().discount
-                if applying:
-                    voucher_price = price * (1 - discount / 100)
-                    return render(request, 'game.html',{"price":voucher_price,'game':game})
-            else:
-                error = "Invalid or expired voucher code"
-        if cart_add:
-                CartItem.objects.create(game=game, user=request.user, price=price)
+    cart_add = request.POST.get("AddingToCart")
+    if cart_add:
+        return add_to_cart(request,pk)
 
 
     return render(request, 'game.html', {
         'game': game,
         'genres': genres,
         'price': price,
-        'error': error,
-
     })
 
 
@@ -65,13 +48,20 @@ def view_cart(request):
     
     cart_items = CartItem.objects.filter(user=request.user)
     total = sum(item.total_price() for item in cart_items)
-    return render(request, 'cart.html', {'cart_items': cart_items, 'total': total})
+    total_items = sum(item.quantity for item in cart_items)
+    return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items})
 
 def add_to_cart(request, pk):
     if not request.user.is_authenticated:
         return render(request, 'cart.html')
     game = Game.objects.get(id=pk)
-    cart_item = CartItem.objects.create(game=game, user=request.user)
+    try:
+        cart_item = CartItem.objects.get(game=game, user=request.user)
+        cart_item.quantity +=1
+        cart_item.save()
+    except CartItem.DoesNotExist:
+        cart_item = CartItem.objects.create(game=game, user=request.user)
+
     cart_item.save()
     return redirect('view_cart')
 
@@ -138,15 +128,11 @@ def buy_now(request):
     cart_items = CartItem.objects.filter(user=request.user)
 
     if not cart_items.exists():
-        return redirect('view_cart')  # Or show message: cart is empty
+        return redirect('view_cart')  # Cart empty
 
-    # Create the order
     order = Order.objects.create(user=request.user)
-    
-
     total = 0
 
-    # Create OrderItem for each CartItem
     for item in cart_items:
         price = item.total_price()
         OrderItem.objects.create(
@@ -154,15 +140,15 @@ def buy_now(request):
             game=item.game,
             quantity=item.quantity,
             price=price,
-            item_price = item.game_price,
+            item_price=item.game.discounted_price(),  # call method
         )
         total += price
 
-    # Update total price
     order.total_price = total
     order.save()
-    order_mail_invoice(request,order)
-    # Now safely delete cart items
+
+    order_mail_invoice(request, order)  # send invoice after saving order
+
     cart_items.delete()
 
     return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
@@ -172,6 +158,32 @@ def delete_all_cart_items(request):
     if request.method == "POST":
         CartItem.objects.filter(user=request.user).delete()
     return redirect('view_cart')
+
+def voucher_apply(request):
+    if request.method == 'POST':
+        coupon = request.POST.get('coupon')
+        cart_items = CartItem.objects.filter(user=request.user)
+
+        coupon_code = Voucher.objects.filter(code=coupon, expiration_date__gte=timezone.now()).first()
+        if coupon_code:
+            for item in cart_items:
+                item.voucher_discount = coupon_code.discount
+                item.save()
+                total_items = sum(item.quantity for item in cart_items)
+                total = sum(item.total_price() for item in cart_items)
+                return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': coupon_code,})
+    return redirect('view_cart')
+
+
+def remove_voucher(request):
+    if request.method == 'POST':
+        cart_items = CartItem.objects.filter(user=request.user)
+        for item in cart_items:
+            item.voucher_discount = None
+            item.save()
+        return redirect('view_cart')
+    return redirect('view_cart')
+
 
 def view_orders(request):
     if not request.user.is_authenticated:

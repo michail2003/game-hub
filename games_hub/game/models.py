@@ -75,15 +75,13 @@ class CartItem(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    price =models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    game_price = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    voucher_discount = models.DecimalField(max_digits=10, decimal_places=2,null = True)
 
     def total_price(self):
-        return self.game.discounted_price() * self.quantity  
+        unit_price = self.game.discounted_price()
+        if self.voucher_discount:
+            unit_price *= (1 - self.voucher_discount / 100)
+        return unit_price * self.quantity
+    
     def __str__(self):
         return f'{self.quantity} x {self.product.name}'
-    def save(self, *args, **kwargs):
-        self.price = self.total_price()
-        self.game_price = self.game.discounted_price()
-        super().save(*args, **kwargs)
-
