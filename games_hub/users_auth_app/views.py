@@ -104,30 +104,19 @@ def more_details(request):
         return redirect('home')
 
 def library(request):
-    unsynced_orders = Order.objects.filter(user=request.user, is_library_synced=False)
-    games_to_add = OrderItem.objects.filter(order__in=unsynced_orders)
-
-    for item in games_to_add:
-        library_item = gamelibrary.objects.filter(user=request.user, game=item.game).first()
-
-        if library_item:
-            library_item.quantity += item.quantity
-            library_item.price_bought = item.price
-            library_item.save()
-        else:
-            gamelibrary.objects.create(
-                user=request.user,
-                game=item.game,
-                quantity=item.quantity,
-                price_bought=item.price
-            )
-
-    
-    unsynced_orders.update(is_library_synced=True)
-
-   
     library_games = gamelibrary.objects.filter(user=request.user)
-    print(library_games.count())
-    return render(request, 'library.html', {'games': library_games})
+
+    # Get all games that have pending orders
+    pending_order_items = OrderItem.objects.filter(
+        order__user=request.user,
+        order__order_status='pending'
+    )
+    pending_game_ids = pending_order_items.values_list('game_id', flat=True).distinct()
+
+    return render(request, 'library.html', {
+        'games': library_games,
+        'pending_game_ids': list(pending_game_ids),  # pass as a list
+    })
+
 
     
