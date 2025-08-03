@@ -150,6 +150,7 @@
   <div class="italic font-bold px-4 py-2 bg-gray-800 rounded-t cursor-pointer flex gap-2">
     <h4>{{ user.first_name }}</h4>
     <h4>{{ user.last_name }}</h4>
+    <h4>{{user.games_ordered}}</h4>
   </div>
 
   <!-- Logout box -->
@@ -157,11 +158,6 @@
     
     <a href="{% url 'accaunt' %}" class="px-2 py-1 hover:bg-gray-200 rounded block">
     Manage Your Account
-  </a>
-
-  <!-- Orders Link -->
-  <a href="{% url 'library' %}" class="px-2 py-1 hover:bg-gray-200 rounded block">
-    Library
   </a>
 
     <form method="POST" action="{% url 'logout' %}">

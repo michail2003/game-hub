@@ -1,31 +1,33 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold text-white mb-6">Your Library</h1>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for item in games %}
-      <div class="bg-gray-800 rounded-2xl p-4 shadow-lg text-white">
-        <h2 class="text-xl font-semibold mb-2">{{ item.game.title }}</h2>
-        <p class="text-sm text-gray-300 mb-1">Quantity: {{ item.quantity }}</p>
-        <p class="text-sm text-gray-400 mb-2">Date: {{ item.added|date:"Y-m-d H:i" }}</p>
-
-        {% if item.game.image_url %}
-          <img
-            src="{{ item.game.image_url }}"
-            alt="{{ item.game.title }}"
-            class="w-full h-60 object-cover rounded-xl transition duration-300 
-            {% if item.game.id in pending_game_ids %}grayscale{% endif %}"
-          >
-        {% else %}
-          <div class="w-full h-60 bg-gray-600 rounded-xl flex items-center justify-center text-gray-300">
-            No Image
-          </div>
-        {% endif %}
-      </div>
-    {% empty %}
-      <p class="text-white">No completed orders found.</p>
-    {% endfor %}
-  </div>
+<h1 class="text-white text-3xl mb-6">Owned Games</h1>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for item in games %}
+    <div class="bg-gray-800 rounded-xl p-4 text-white">
+      <h2 class="font-semibold text-xl mb-2">{{ item.game.title }}</h2>
+      <p>Quantity: {{ item.quantity }}</p>
+      <p>Purchased on: {{ item.added|date:"Y-m-d H:i" }}</p>
+      <img src="{{ item.game.image_url }}" class="rounded-lg w-full h-60 object-cover" alt="{{ item.game.title }}">
+    </div>
+  {% empty %}
+    <p class="text-white">No owned games yet.</p>
+  {% endfor %}
 </div>
+
+<h1 class="text-white text-3xl mt-12 mb-6">Pending Games</h1>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for item in pending_games %}
+    <div class="bg-gray-700 rounded-xl p-4 text-yellow-300">
+      <h2 class="font-semibold text-xl mb-2">{{ item.game.title }}</h2>
+      <p>Quantity: {{ item.quantity }}</p>
+      <p>Status: Pending</p>
+      <img src="{{ item.game.image_url }}" class="rounded-lg w-full h-60 object-cover grayscale" alt="{{ item.game.title }}">
+    </div>
+  {% empty %}
+    <p class="text-yellow-300">No pending games.</p>
+  {% endfor %}
+</div>
+
+
 {% endblock %}

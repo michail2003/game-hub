@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser,OrderItem,gamelibrary,Order
+from .models import CustomUser
 
 def login_view(request):
     if request.method == 'GET':
@@ -102,21 +102,6 @@ def more_details(request):
         login(request, user)
 
         return redirect('home')
-
-def library(request):
-    library_games = gamelibrary.objects.filter(user=request.user)
-
-    # Get all games that have pending orders
-    pending_order_items = OrderItem.objects.filter(
-        order__user=request.user,
-        order__order_status='pending'
-    )
-    pending_game_ids = pending_order_items.values_list('game_id', flat=True).distinct()
-
-    return render(request, 'library.html', {
-        'games': library_games,
-        'pending_game_ids': list(pending_game_ids),  # pass as a list
-    })
 
 
     

@@ -1,6 +1,6 @@
 
 from django.db import models
-
+from users_auth_app.models import Voucher
 from django.conf import settings
 
 
@@ -76,6 +76,7 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     voucher_discount = models.DecimalField(max_digits=10, decimal_places=2,null = True)
+    voucher_used = models.ForeignKey(Voucher,null=True,on_delete=models.CASCADE)
 
     def total_price(self):
         unit_price = self.game.discounted_price()

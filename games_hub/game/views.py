@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Game, Game_Genre, CartItem
-from users_auth_app.models import Order, Voucher,OrderItem
+from users_auth_app.models import Order, Voucher,OrderItem,CustomUser
 from django.core.mail import send_mail
 from reportlab.lib.pagesizes import A5
 from reportlab.pdfgen import canvas
@@ -20,7 +20,13 @@ def home(request):
     searched_word = request.GET.get('search')
     if searched_word:
         games = games.filter(title__contains=searched_word)
-    return render(request, 'homepage.html', {'games':games,'genres': genres})
+
+    games_with_discount = [
+        (game.price - game.discounted_price(), game) for game in games
+    ]
+    top_discounted_games = [game for _, game in sorted(games_with_discount, reverse=True)[:2]]
+    
+    return render(request, 'homepage.html', {'games':games,'genres': genres,'top_discounted_games': top_discounted_games})
 
 
 
@@ -124,6 +130,18 @@ def order_mail_invoice(request,order):
     email.attach(f'Invoice_{order.order_id}.pdf', buffer.read(), 'application/pdf')
     email.send()
 
+
+def milestone_voucher(request,milestone,bought,discount):
+    print(bought)
+    total = request.user.games_ordered
+    check = total - bought
+    if check < milestone and (check+bought) >= milestone:
+        Voucher.objects.create(
+            user = request.user,
+            discount = discount,
+            usage_limit = 1,
+        )
+
 def buy_now(request):
     cart_items = CartItem.objects.filter(user=request.user)
 
@@ -134,6 +152,14 @@ def buy_now(request):
     total = 0
 
     for item in cart_items:
+        voucher = item.voucher_used
+        if voucher:
+            if voucher.usage_limit == 1:
+                voucher.delete()
+            else:
+                voucher.used_count += 1
+                voucher.save()
+
         price = item.total_price()
         OrderItem.objects.create(
             order=order,
@@ -146,11 +172,16 @@ def buy_now(request):
 
     order.total_price = total
     order.save()
-
-    order_mail_invoice(request, order)  # send invoice after saving order
-
+    # order_mail_invoice(request, order)  # send invoice after saving order
+    total_items = sum(item.quantity for item in cart_items)
+    request.user.games_ordered += total_items
+    request.user.save()
     cart_items.delete()
-
+    milestone_voucher(request,5,total_items,25)
+    milestone_voucher(request,10,total_items,30)
+    milestone_voucher(request,15,total_items,35)
+    milestone_voucher(request,20,total_items,40)
+    milestone_voucher(request,30,total_items,75)
     return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
 
 
@@ -165,13 +196,23 @@ def voucher_apply(request):
         cart_items = CartItem.objects.filter(user=request.user)
 
         coupon_code = Voucher.objects.filter(code=coupon, expiration_date__gte=timezone.now()).first()
+        milestone_coupon = Voucher.objects.filter(user = request.user, usage_limit =1, code=coupon).first()
         if coupon_code:
             for item in cart_items:
                 item.voucher_discount = coupon_code.discount
+                item.voucher_used = coupon_code
                 item.save()
                 total_items = sum(item.quantity for item in cart_items)
                 total = sum(item.total_price() for item in cart_items)
                 return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': coupon_code,})
+        if milestone_coupon:
+            for item in cart_items:
+                item.voucher_discount = milestone_coupon.discount
+                item.voucher_used = milestone_coupon
+                item.save()
+                total_items = sum(item.quantity for item in cart_items)
+                total = sum(item.total_price() for item in cart_items)
+                return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': milestone_coupon,})
     return redirect('view_cart')
 
 
