@@ -2,38 +2,133 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-  <!-- Optional user profile picture -->
-  {% if user.profile_picture %}
-  <div class="flex justify-center mb-8">
-    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="w-24 h-24 rounded-full shadow-md object-cover">
-  </div>
-  {% endif %}
+  <!-- Discounted Games Slider -->
+  <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">🔥 Top Discounted Games</h2>
 
-  <!-- Game Cards -->
-  <div class="flex flex-wrap justify-center gap-6">
-    {% for game in games %}
-    <div class="bg-white shadow-lg rounded-2xl w-64 hover:shadow-xl transition duration-300 border border-gray-200">
-      <a href="{% url 'game_detail' game.pk %}" class="block">
-        <div class="p-4">
-          <h2 class="text-lg font-semibold text-gray-800 mb-2">{{ game.title }} <span class="text-sm text-gray-500">({{ game.get_console_display }})</span></h2>
+  <div class="relative overflow-hidden bg-gray-100 p-6 rounded-xl shadow-inner mb-12">
+    <div id="slider" class="flex transition-transform duration-500 ease-in-out">
+      {% for game in discounted_games %}
+      <div class="min-w-[300px] max-w-[300px] mx-2 bg-white rounded-xl shadow-md border border-gray-200 p-4 relative flex-shrink-0">
+        
+        <div class="relative">
           {% if game.image_url %}
-          <img src="{{ game.image_url }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-3">
+            <img src="{{ game.image_url }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-3">
           {% else %}
-          <img src="{{ game.image }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-3">
+            <img src="{{ game.image }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-3">
           {% endif %}
-          <p class="text-gray-700 font-medium mb-2">Price: ${{ game.discounted_price|floatformat:2 }}</p>
+          
+          {% if game.discount > 0 %}
+          <span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+            -{{ game.discount|floatformat:0 }}%
+          </span>
+          {% endif %}
         </div>
-      </a>
-      <div class="px-4 pb-4">
-        <form method="post" action="{% url 'add_to_cart' game.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200">
-            Add to Cart
-          </button>
-        </form>
+
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ game.title }}</h3>
+        <p class="mb-2">
+          <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
+          <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
+        </p>
+
+        <div class="flex gap-2 mt-3">
+          <a href="{% url 'game_detail' game.pk %}" class="flex-1 text-center bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded-md text-sm">
+            Learn More
+          </a>
+          <form method="post" action="{% url 'add_to_cart' game.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded-md text-sm">
+              Add
+            </button>
+          </form>
+        </div>
       </div>
+      {% endfor %}
     </div>
+
+    <button onclick="slideLeft()" aria-label="Previous" class="absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 text-gray-800 p-2 rounded-full shadow">
+      &#8592;
+    </button>
+    <button onclick="slideRight()" aria-label="Next" class="absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 text-gray-800 p-2 rounded-full shadow">
+      &#8594;
+    </button>
+  </div>
+
+  <!-- All (or filtered) Games Grid -->
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">All Games</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for game in games %}
+    <div class="bg-white rounded shadow p-4 border border-gray-200 hover:shadow-lg transition duration-200 flex flex-col relative">
+      <a href="{% url 'game_detail' game.pk %}" class="flex-grow">
+        <div class="relative">
+          {% if game.image_url %}
+            <img src="{{ game.image_url }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-2">
+          {% else %}
+            <img src="{{ game.image }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-2">
+          {% endif %}
+          {% if game.discount > 0 %}
+          <span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+            -{{ game.discount|floatformat:0 }}%
+          </span>
+          {% endif %}
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800">{{ game.title }}</h3>
+        <p class="mb-2">
+          {% if game.discounted_price < game.price %}
+            <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
+            <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
+          {% else %}
+            <span class="text-gray-800 font-bold">${{ game.price|floatformat:2 }}</span>
+          {% endif %}
+        </p>
+      </a>
+      <form method="post" action="{% url 'add_to_cart' game.pk %}" class="mt-auto">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm">
+          Add to Cart
+        </button>
+      </form>
+    </div>
+    {% empty %}
+    <p>No games found.</p>
     {% endfor %}
   </div>
 </div>
-{% endblock content %}
+
+<script>
+  const slider = document.getElementById('slider');
+  let offset = 0;
+  const itemWidth = 316; // 300px + margins
+  const visibleItems = 3;
+  const totalItems = parseInt("{{ discounted_games|length }}", 10);
+  const maxOffset = Math.max((totalItems - visibleItems), 0) * itemWidth;
+
+  function slideRight() {
+    if (offset < maxOffset) {
+      offset += itemWidth;
+      slider.style.transform = `translateX(-${offset}px)`;
+    }
+  }
+
+  function slideLeft() {
+    if (offset > 0) {
+      offset -= itemWidth;
+      slider.style.transform = `translateX(-${offset}px)`;
+    }
+  }
+</script>
+
+<style>
+  @media (max-width: 1024px) {
+    #slider > div {
+      min-width: 260px !important;
+      max-width: 260px !important;
+    }
+  }
+  @media (max-width: 640px) {
+    #slider > div {
+      min-width: 220px !important;
+      max-width: 220px !important;
+    }
+  }
+</style>
+{% endblock %}

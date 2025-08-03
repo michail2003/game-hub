@@ -21,12 +21,21 @@ def home(request):
     if searched_word:
         games = games.filter(title__contains=searched_word)
 
-    games_with_discount = [
-        (game.price - game.discounted_price(), game) for game in games
-    ]
-    top_discounted_games = [game for _, game in sorted(games_with_discount, reverse=True)[:2]]
-    
-    return render(request, 'homepage.html', {'games':games,'genres': genres,'top_discounted_games': top_discounted_games})
+    discounted_games = []
+
+    for game in Game.objects.all():
+        if game.discounted_price() < game.price:
+            discounted_games.append(game)
+
+    discounted_games = discounted_games[:12]
+
+    print(f"Discounted games found: {len(discounted_games)}")  # Debug line
+
+    return render(request, 'homepage.html', {
+        'games': games,
+        'genres': genres,
+        'discounted_games': discounted_games,
+    })
 
 
 
