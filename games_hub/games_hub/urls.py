@@ -36,6 +36,8 @@ urlpatterns = [
     path('cart/delete-all/', views.delete_all_cart_items, name='delete_all_cart_items'),
     path('orders/', views.view_orders, name='view_orders'),
     path('apply-coupon', views.voucher_apply, name = 'apply-voucher'),
-    path('remove-coupon', views.remove_voucher, name = 'remove-voucher')
-
+    path('remove-coupon', views.remove_voucher, name = 'remove-voucher'),
+    path('checkout-form/', views.checkout_view, name='checkout_form'),
+    path('order-confirmation/', views.buy_now, name='order_confirmation'),
+    path('rewards/', views.rewards, name='rewards'),
 ]

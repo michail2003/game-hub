@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md mt-8">
+  <a href="{% url 'view_cart' %}" class="inline-flex items-center text-sm text-blue-600 hover:underline mb-4">
+    ← Back to Cart
+  </a>
+
+  <h2 class="text-xl font-bold mb-4">Shipping Information</h2>
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 gap-4">
+      <input type="email" name="email" value="{{ initial.email }}" placeholder="Email" required
+             class="w-full border border-gray-300 p-2 rounded-md">
+
+      <input type="text" name="phone_number" value="{{ initial.phone_number }}" placeholder="Phone Number"
+             class="w-full border border-gray-300 p-2 rounded-md">
+
+      <input type="text" name="city" value="{{ initial.city }}" placeholder="City"
+             class="w-full border border-gray-300 p-2 rounded-md">
+
+      <input type="text" name="area" value="{{ initial.area }}" placeholder="Area"
+             class="w-full border border-gray-300 p-2 rounded-md">
+
+      <input type="text" name="street" value="{{ initial.street }}" placeholder="Street"
+             class="w-full border border-gray-300 p-2 rounded-md">
+
+      <input type="text" name="apartment" value="{{ initial.apartment }}" placeholder="Apartment"
+             class="w-full border border-gray-300 p-2 rounded-md">
+    </div>
+
+    <div class="flex justify-between mt-6">
+      <button type="submit" name="action" value="buy_now"
+              class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition">
+        Buy Now
+      </button>
+
+      <button type="submit" name="action" value="cancel_order"
+         class="bg-red-600 text-white py-2 px-6 rounded-md hover:bg-red-700 transition">
+        Cancel Order
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

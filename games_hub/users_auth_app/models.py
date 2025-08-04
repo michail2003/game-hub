@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
     city = models.CharField(max_length=100, blank=True)
     area = models.CharField(max_length=100, blank=True)
     street = models.CharField(max_length=100, blank=True)
+    apartment = models.CharField(max_length=5, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True)
     games_ordered = models.PositiveIntegerField(default=0)
 
@@ -32,7 +33,6 @@ class Order(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     order_status = models.CharField(max_length=50, choices=status, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    is_library_synced = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"{self.order_id} by {self.user.email} - Status: {self.order_status}"
@@ -44,14 +44,14 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     item_price = models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    photo = models.ImageField
+    coupon_used = models.CharField(max_length=10, null=True, blank=True)
 
 class Voucher(models.Model):
 
     def generate_voucher_code():
-            return uuid.uuid4().hex[:5].upper()
+            return uuid.uuid4().hex[:8].upper()
         
-    code = models.CharField(max_length=10, default=generate_voucher_code, unique=True)
+    code = models.CharField(max_length=8, default=generate_voucher_code, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True)
     discount = models.DecimalField(max_digits=5, decimal_places=2)
     games= models.ManyToManyField("game.Game")
@@ -59,7 +59,7 @@ class Voucher(models.Model):
     usage_limit = models.PositiveIntegerField(null=True, blank=True)
     used_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    milestone = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.code} - {self.discount}% off"

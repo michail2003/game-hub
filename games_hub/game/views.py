@@ -29,8 +29,6 @@ def home(request):
 
     discounted_games = discounted_games[:12]
 
-    print(f"Discounted games found: {len(discounted_games)}")  # Debug line
-
     return render(request, 'homepage.html', {
         'games': games,
         'genres': genres,
@@ -89,6 +87,9 @@ def increase_quantity(request, pk):
     item = get_object_or_404(CartItem, pk=pk, user=request.user)
     item.quantity += 1
     item.save()
+    if item.voucher_used:
+        print('voucher used')
+        return redirect('apply-voucher')
     return redirect('view_cart')
 
 def decrease_quantity(request, pk):
@@ -97,10 +98,13 @@ def decrease_quantity(request, pk):
         item.quantity -= 1
         item.save()
     else:
-        item.delete()  # Optionally remove if it reaches 0
+        item.delete() 
+    if item.voucher_used:
+        print('voucher used')
+        return redirect('apply-voucher')
     return redirect('view_cart')
 
-def order_mail_invoice(request,order):
+def order_mail_invoice(request,order, email_adress):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A5)
     width, height = A5
@@ -133,7 +137,7 @@ def order_mail_invoice(request,order):
     subject=f'Your order with ID {order.order_id}',
     body=f'Hello Mr/Mrs. {order.user.first_name} {order.user.last_name},\n\nYour order with ID {order.order_id} and total price {order.total_price:.2f} $ will be delivered soon.\n\nYour invoice is attached.',
     from_email=settings.EMAIL_HOST_USER,
-    to=[order.user.email],
+    to=[email_adress],
 )
 
     email.attach(f'Invoice_{order.order_id}.pdf', buffer.read(), 'application/pdf')
@@ -141,17 +145,18 @@ def order_mail_invoice(request,order):
 
 
 def milestone_voucher(request,milestone,bought,discount):
-    print(bought)
     total = request.user.games_ordered
     check = total - bought
+    print(f'games bought: {bought}')
     if check < milestone and (check+bought) >= milestone:
         Voucher.objects.create(
             user = request.user,
             discount = discount,
             usage_limit = 1,
+            milestone = milestone,
         )
 
-def buy_now(request):
+def buy_now(request,mail):
     cart_items = CartItem.objects.filter(user=request.user)
 
     if not cart_items.exists():
@@ -175,13 +180,14 @@ def buy_now(request):
             game=item.game,
             quantity=item.quantity,
             price=price,
-            item_price=item.game.discounted_price(),  # call method
+            item_price=item.game.discounted_price(),
+            coupon_used=item.voucher_used if item.voucher_used else None
         )
         total += price
 
     order.total_price = total
     order.save()
-    # order_mail_invoice(request, order)  # send invoice after saving order
+    order_mail_invoice(request, order,mail)
     total_items = sum(item.quantity for item in cart_items)
     request.user.games_ordered += total_items
     request.user.save()
@@ -191,7 +197,15 @@ def buy_now(request):
     milestone_voucher(request,15,total_items,35)
     milestone_voucher(request,20,total_items,40)
     milestone_voucher(request,30,total_items,75)
-    return render(request, 'cart.html', {'message': f'Order placed successfully! order ID: {order.order_id}', 'total': total})
+    order_items = OrderItem.objects.filter(order=order)
+    return render(request, 'order_confirmation.html', {
+        'order_id': order.order_id,
+        'total_price': order.total_price,
+        'name': order.user.first_name,
+        'surname': order.user.last_name,
+        'date': order.order_date,
+        'order_items': order_items, 
+    })
 
 
 def delete_all_cart_items(request):
@@ -211,17 +225,17 @@ def voucher_apply(request):
                 item.voucher_discount = coupon_code.discount
                 item.voucher_used = coupon_code
                 item.save()
-                total_items = sum(item.quantity for item in cart_items)
-                total = sum(item.total_price() for item in cart_items)
-                return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': coupon_code,})
+            total_items = sum(item.quantity for item in cart_items)
+            total = sum(item.total_price() for item in cart_items)
+            return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': coupon_code,})
         if milestone_coupon:
             for item in cart_items:
                 item.voucher_discount = milestone_coupon.discount
                 item.voucher_used = milestone_coupon
                 item.save()
-                total_items = sum(item.quantity for item in cart_items)
-                total = sum(item.total_price() for item in cart_items)
-                return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': milestone_coupon,})
+            total_items = sum(item.quantity for item in cart_items)
+            total = sum(item.total_price() for item in cart_items)
+            return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': milestone_coupon,})
     return redirect('view_cart')
 
 
@@ -241,3 +255,33 @@ def view_orders(request):
     
     orders = Order.objects.filter(user=request.user)
     return render(request, 'orders.html', {'orders': orders})
+
+
+
+def checkout_view(request):
+    user = request.user
+
+    if request.method == 'POST':
+        action = request.POST.get("action")
+        if action == "buy_now":
+            email_adress = request.POST.get("email")
+            return buy_now(request,email_adress)
+        elif action == "cancel_order":
+            CartItem.objects.filter(user=user).delete()
+            return redirect('view_cart')
+
+    initial_data = {
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'city': user.city,
+        'area': user.area,
+        'street': user.street,
+        'apartment': user.apartment,
+    }
+
+    return render(request, 'checkout_form.html', {'initial': initial_data})
+
+def rewards(request):
+    vouchers = Voucher.objects.filter(user=request.user)
+    return render(request, 'users_coupons.html', {'vouchers': vouchers})
+

@@ -7,13 +7,11 @@ from django.conf import settings
 
 # Create your models here.
 Console_CHOICES = (
-    ('Ps3', 'PlayStation 3'),
-    ('Ps4', 'PlayStation 4'),
-    ('Ps5', 'PlayStation 5'),
-    ('Xbox360', 'Xbox 360'),
-    ('XboxOne', 'Xbox One'),
-    ('XboxSeriesX', 'Xbox Series X/S'),
-    ('Switch', 'Nintendo Switch'),
+    ('PS4', 'PlayStation 4'),
+    ('PS5', 'PlayStation 5'),
+    ('Xbox One', 'Xbox One'),
+    ('Xbox Series X/S', 'Xbox Series X/S'),
+    ('Nintendo Switch', 'Nintendo Switch'),
     ('PC', 'PC'),
 )
 

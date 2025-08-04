@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-12 text-center">
+
+  <!-- Big Checkmark -->
+  <div class="text-green-600 mb-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+
+  <h1 class="text-4xl font-bold text-green-700 mb-4">Order Placed Successfully!</h1>
+
+  <p class="text-gray-700 mb-8">Thank you for your purchase Mr/Mrs {{name}} {{surname}}. Here are your order details:</p>
+
+  <div class="bg-white shadow-md rounded-lg p-6 text-left mb-8">
+    <p><strong>Order ID:</strong> {{ order_id }}</p>
+    <p><strong>Order Date:</strong> {{ date|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Total Price:</strong> ${{ total_price|floatformat:2 }}</p>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg p-6 text-left">
+    <h2 class="text-xl font-semibold mb-4">Ordered Games</h2>
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr>
+          <th class="border-b py-2">Title</th>
+          <th class="border-b py-2">Quantity</th>
+          <th class="border-b py-2">Price (each)</th>
+          <th class="border-b py-2">Total Price</th>
+        </tr>
+      </thead>
+      <tbody>
+  {% for item in order_items %}
+  <tr class="border-b">
+    <td class="py-2">{{ item.game.title }}</td>
+    <td class="py-2">{{ item.quantity }}</td>
+    <td class="py-2">${{ item.item_price|floatformat:2 }}</td>
+    <td class="py-2">${{ item.price|floatformat:2 }}</td>
+    <td class="py-2">
+      {% if item.coupon_used %}
+        Coupon: {{ item.coupon_used }}
+      {% else %}
+        -
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+    </table>
+  </div>
+
+  <a href="{% url 'home' %}" class="inline-block mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-md transition">
+    Back to Home
+  </a>
+</div>
+{% endblock %}

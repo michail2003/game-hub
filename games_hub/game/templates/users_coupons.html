@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-xl w-full mx-auto">
+
+  <!-- Milestone Rewards Table -->
+  <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-indigo-700">Milestone Rewards</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-left text-gray-700 text-center">
+            <th class="px-4 py-2">Milestone</th>
+            <th class="px-4 py-2">Reward</th>
+            <th class="px-4 py-2">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+              <tr class="bg-green-50 border-l-4 border-green-500 text-center">
+                <td class="px-4 py-2 font-semibold text-green-700">🎯 20 games purchased</td>
+                <td class="px-4 py-2 text-green-700 font-medium">30% discount</td>
+                <td class="px-4 py-2 text-green-700 font-medium">{{ 20 }}/{{ user.games_ordered }}</td>
+              </tr>
+
+              <tr class="bg-gray-200 border-l-4 border-black text-center">
+                <td class="px-4 py-2">🎯 100 games purchased</td>
+                <td class="px-4 py-2">100% discount</td>
+                <td class="px-4 py-2">{{100 }}/ <p class="inline text-red-700">{{ user.games_ordered }}</p></td>
+              </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Coupons Section -->
+  <section class="bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Your Coupons</h2>
+    <p class="text-gray-700 font-medium mb-6 bg-gray-100 p-3 rounded-md text-center">
+      💡 These coupons are exclusive and can only be used once.
+    </p>
+
+    {% if vouchers %}
+      <ul class="space-y-4 text-indigo-700 font-mono text-lg">
+        {% for v in vouchers %}
+          <li class="border border-indigo-300 rounded-md p-4 bg-indigo-50 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow duration-200">
+            <!-- Code -->
+            <span class="font-bold tracking-wide">{{ v.code }}</span>
+            
+            <!-- Milestone + Date -->
+            <div class="text-center">
+              <span class="block font-semibold text-indigo-600">🎯 {{ v.milestone }} Games purchased</span>
+              <span class="block text-xs text-gray-500">{{ v.created_at|date:"d M, Y" }}</span>
+            </div>
+
+            <!-- Discount -->
+            <span class="text-green-600 font-bold">{{ v.discount|floatformat:0 }}% OFF</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-500 italic text-center text-lg">No coupons yet. Keep purchasing to earn rewards!</p>
+    {% endif %}
+  </section>
+
+</div>
+
+{% endblock %}

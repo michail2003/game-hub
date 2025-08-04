@@ -3,12 +3,13 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
   <!-- Discounted Games Slider -->
-  <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">🔥 Top Discounted Games</h2>
+  <h2 class="text-2xl font-bold text-center mb-6 text-gray-1000">🔥 Top Discounted Games</h2>
 
-  <div class="relative overflow-hidden bg-gray-100 p-6 rounded-xl shadow-inner mb-12">
-    <div id="slider" class="flex transition-transform duration-500 ease-in-out">
+  <div class="relative overflow-hidden bg-red-900 p-6 rounded-xl shadow-xl mb-12 ring-1 ring-red-800/30">
+  <div id="slider" class="flex transition-transform duration-500 ease-in-out gap-4">
+
       {% for game in discounted_games %}
-      <div class="min-w-[300px] max-w-[300px] mx-2 bg-white rounded-xl shadow-md border border-gray-200 p-4 relative flex-shrink-0">
+      <div class="min-w-[300px] max-w-[300px] mx-2 bg-gray-800 rounded-xl shadow-md border border-gray-200 p-4 relative flex-shrink-0">
         
         <div class="relative">
           {% if game.image_url %}
@@ -18,13 +19,13 @@
           {% endif %}
           
           {% if game.discount > 0 %}
-          <span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+          <span class="absolute -top-3 -right-3 bg-red-600 text-white text-sm font-bold rounded-full px-3 py-2 shadow-md z-10">
             -{{ game.discount|floatformat:0 }}%
           </span>
           {% endif %}
         </div>
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ game.title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-100 mb-1">{{ game.title }}</h3>
         <p class="mb-2">
           <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
           <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
@@ -57,41 +58,56 @@
   <h2 class="text-2xl font-bold mb-6 text-gray-800">All Games</h2>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     {% for game in games %}
-    <div class="bg-white rounded shadow p-4 border border-gray-200 hover:shadow-lg transition duration-200 flex flex-col relative">
-      <a href="{% url 'game_detail' game.pk %}" class="flex-grow">
-        <div class="relative">
+      <div class="bg-white rounded shadow p-4 border border-gray-200 hover:shadow-lg transition duration-200 flex flex-col relative">
+        <a href="{% url 'game_detail' game.pk %}" class="flex-grow">
+         <div class="relative">
           {% if game.image_url %}
             <img src="{{ game.image_url }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-2">
           {% else %}
             <img src="{{ game.image }}" alt="{{ game.title }}" class="w-full h-40 object-cover rounded-md mb-2">
           {% endif %}
+
           {% if game.discount > 0 %}
-          <span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
-            -{{ game.discount|floatformat:0 }}%
-          </span>
+            <span class="absolute -top-3 -right-3 bg-red-600 text-white text-sm font-bold rounded-full px-3 py-2 shadow-md z-10">
+              -{{ game.discount|floatformat:0 }}%
+            </span>
           {% endif %}
         </div>
-        <h3 class="text-lg font-semibold text-gray-800">{{ game.title }}</h3>
-        <p class="mb-2">
-          {% if game.discounted_price < game.price %}
-            <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
-            <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
-          {% else %}
-            <span class="text-gray-800 font-bold">${{ game.price|floatformat:2 }}</span>
+          <h3 class="text-lg font-semibold text-gray-800">{{ game.title }}
+            {% if game.console in "PS4 PS5" %}
+            <div class="flex gap-2">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/PlayStation_App_Icon.jpg/960px-PlayStation_App_Icon.jpg"
+                alt="PlayStation" class="w-6 h-6 rounded">
+              <h4>{{game.console}}</h4>
+            </div>
+          {% elif game.console in "Xbox360 XboxOne XboxSeriesX" %}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_One_logo.svg"
+                alt="Xbox" class="absolute top-2 left-2 w-6 h-6">
+          {% elif game.console == "PC" %}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Windows_logo_-_2021.svg/2048px-Windows_logo_-_2021.svg.png"
+                alt="PC" class="absolute top-2 left-2 w-6 h-6">
           {% endif %}
-        </p>
-      </a>
-      <form method="post" action="{% url 'add_to_cart' game.pk %}" class="mt-auto">
-        {% csrf_token %}
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm">
-          Add to Cart
-        </button>
-      </form>
+          </h3>
+          <p class="mb-2">
+            {% if game.discounted_price < game.price %}
+              <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
+              <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
+            {% else %}
+              <span class="text-gray-800 font-bold">${{ game.price|floatformat:2 }}</span>
+            {% endif %}
+          </p>
+        </a>
+        <form method="post" action="{% url 'add_to_cart' game.pk %}" class="mt-auto">
+          {% csrf_token %}
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm">
+            Add to Cart
+          </button>
+        </form>
+      </div>
+      {% empty %}
+      <p>No games found.</p>
+      {% endfor %}
     </div>
-    {% empty %}
-    <p>No games found.</p>
-    {% endfor %}
-  </div>
 </div>
 
 <script>
