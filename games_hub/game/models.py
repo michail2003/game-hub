@@ -84,3 +84,11 @@ class CartItem(models.Model):
     
     def __str__(self):
         return f'{self.quantity} x {self.product.name}'
+
+
+class Milesstones(models.Model):
+    milestone = models.PositiveIntegerField()
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self):
+        return f'Milestone {self.milestone} - {self.discount}% off'

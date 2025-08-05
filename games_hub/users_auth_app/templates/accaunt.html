@@ -8,7 +8,7 @@
         {% csrf_token %}
         
         {% if error %}
-            <p class="text-red-600 font-semibold text-center">{{ error }},{{user}}</p>
+            <p class="text-red-600 font-semibold text-center">{{ error }}</p>
         {% endif %}
 
         <!-- Profile Picture -->
@@ -69,6 +69,12 @@
         <div>
             <label class="block text-gray-700 font-medium mb-1">Street</label>
             <input type="text" name="street" value="{{ user.street }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Apartment -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Apartment</label>
+            <input type="text" name="apartment" value="{{ user.apartment }}" class="w-full rounded border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
         <!-- Submit Button -->

@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
     city = models.CharField(max_length=100, blank=True)
     area = models.CharField(max_length=100, blank=True)
     street = models.CharField(max_length=100, blank=True)
-    apartment = models.CharField(max_length=5, null=True, blank=True)
+    apartment = models.CharField(max_length=5,default='0',blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True)
     games_ordered = models.PositiveIntegerField(default=0)
 

@@ -51,8 +51,6 @@ def register_view(request):
         return redirect('home')
 
 
-from django.contrib.auth import login
-
 def more_details(request):
     if request.method == 'GET':
         return render(request, 'accaunt.html', {'user': request.user})
@@ -68,12 +66,10 @@ def more_details(request):
         profile_picture = request.FILES.get('profile_picture')
         new_password = request.POST.get('new_password')
         confirm_new_password = request.POST.get('confirm_new_password')
+        apartment = request.POST.get('apartment')
 
         if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
             return render(request, 'accaunt.html', {'error': 'Email is already taken'})
-        
-        if CustomUser.objects.filter(phone_number=phone_number).exclude(id=user.id).exists():
-            return render(request, 'accaunt.html', {'error': 'Phone number is already taken'})
         
         if not first_name or not last_name:
             return render(request, 'accaunt.html', {'error': 'First and last name are required'})
@@ -93,6 +89,7 @@ def more_details(request):
         user.city = city
         user.area = area
         user.street = street
+        user.apartment = apartment
 
         if profile_picture:
             user.profile_picture = profile_picture

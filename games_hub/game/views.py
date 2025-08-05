@@ -3,7 +3,7 @@ from io import BytesIO
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
-from .models import Game, Game_Genre, CartItem
+from .models import Game, Game_Genre, CartItem,Milesstones
 from users_auth_app.models import Order, Voucher,OrderItem,CustomUser
 from django.core.mail import send_mail
 from reportlab.lib.pagesizes import A5
@@ -62,7 +62,18 @@ def view_cart(request):
     cart_items = CartItem.objects.filter(user=request.user)
     total = sum(item.total_price() for item in cart_items)
     total_items = sum(item.quantity for item in cart_items)
-    return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items})
+
+    # Find first voucher used in any item (or None if none)
+    coupon_applied = next((item.voucher_used for item in cart_items if item.voucher_used), None)
+
+    context = {
+        'cart_items': cart_items,
+        'total': total,
+        'items': total_items,
+        'coupon_applied': coupon_applied,
+    }
+
+    return render(request, 'cart.html', context)
 
 def add_to_cart(request, pk):
     if not request.user.is_authenticated:
@@ -87,9 +98,6 @@ def increase_quantity(request, pk):
     item = get_object_or_404(CartItem, pk=pk, user=request.user)
     item.quantity += 1
     item.save()
-    if item.voucher_used:
-        print('voucher used')
-        return redirect('apply-voucher')
     return redirect('view_cart')
 
 def decrease_quantity(request, pk):
@@ -99,9 +107,6 @@ def decrease_quantity(request, pk):
         item.save()
     else:
         item.delete() 
-    if item.voucher_used:
-        print('voucher used')
-        return redirect('apply-voucher')
     return redirect('view_cart')
 
 def order_mail_invoice(request,order, email_adress):
@@ -144,17 +149,18 @@ def order_mail_invoice(request,order, email_adress):
     email.send()
 
 
-def milestone_voucher(request,milestone,bought,discount):
+def milestone_voucher(request,bought):
+    milestone = Milesstones.objects.all()
     total = request.user.games_ordered
     check = total - bought
-    print(f'games bought: {bought}')
-    if check < milestone and (check+bought) >= milestone:
-        Voucher.objects.create(
-            user = request.user,
-            discount = discount,
-            usage_limit = 1,
-            milestone = milestone,
-        )
+    for m in milestone:
+        if check < m.milestone and (check+bought) >= m.milestone:
+            Voucher.objects.create(
+                user = request.user,
+                discount = m.discount,
+                usage_limit = 1,
+                milestone = m.milestone,
+            )
 
 def buy_now(request,mail):
     cart_items = CartItem.objects.filter(user=request.user)
@@ -192,11 +198,7 @@ def buy_now(request,mail):
     request.user.games_ordered += total_items
     request.user.save()
     cart_items.delete()
-    milestone_voucher(request,5,total_items,25)
-    milestone_voucher(request,10,total_items,30)
-    milestone_voucher(request,15,total_items,35)
-    milestone_voucher(request,20,total_items,40)
-    milestone_voucher(request,30,total_items,75)
+    milestone_voucher(request,total_items)
     order_items = OrderItem.objects.filter(order=order)
     return render(request, 'order_confirmation.html', {
         'order_id': order.order_id,
@@ -225,17 +227,13 @@ def voucher_apply(request):
                 item.voucher_discount = coupon_code.discount
                 item.voucher_used = coupon_code
                 item.save()
-            total_items = sum(item.quantity for item in cart_items)
-            total = sum(item.total_price() for item in cart_items)
-            return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': coupon_code,})
-        if milestone_coupon:
+            return redirect('view_cart')
+        elif milestone_coupon:   
             for item in cart_items:
                 item.voucher_discount = milestone_coupon.discount
                 item.voucher_used = milestone_coupon
                 item.save()
-            total_items = sum(item.quantity for item in cart_items)
-            total = sum(item.total_price() for item in cart_items)
-            return render(request, 'cart.html', {'cart_items': cart_items, 'total': total, 'items':total_items,'coupon_code': milestone_coupon,})
+            return redirect('view_cart')   
     return redirect('view_cart')
 
 
@@ -244,6 +242,7 @@ def remove_voucher(request):
         cart_items = CartItem.objects.filter(user=request.user)
         for item in cart_items:
             item.voucher_discount = None
+            item.voucher_used = None
             item.save()
         return redirect('view_cart')
     return redirect('view_cart')
@@ -261,15 +260,7 @@ def view_orders(request):
 def checkout_view(request):
     user = request.user
 
-    if request.method == 'POST':
-        action = request.POST.get("action")
-        if action == "buy_now":
-            email_adress = request.POST.get("email")
-            return buy_now(request,email_adress)
-        elif action == "cancel_order":
-            CartItem.objects.filter(user=user).delete()
-            return redirect('view_cart')
-
+    # Default initial data from user profile
     initial_data = {
         'email': user.email,
         'phone_number': user.phone_number,
@@ -279,9 +270,43 @@ def checkout_view(request):
         'apartment': user.apartment,
     }
 
-    return render(request, 'checkout_form.html', {'initial': initial_data})
+    if request.method == 'GET':
+        return render(request, 'checkout_form.html', {'initial': initial_data})
+
+    else:  # POST
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+        city = request.POST.get('city')
+        area = request.POST.get('area')
+        street = request.POST.get('street')
+        apartment = request.POST.get('apartment')
+        action = request.POST.get("action")
+
+        # Override initial_data with submitted values so they stay filled
+        initial_data.update({
+            'email': email,
+            'phone_number': phone_number,
+            'city': city,
+            'area': area,
+            'street': street,
+            'apartment': apartment,
+        })
+
+        if not all([email, phone_number, city, area, street, apartment]):
+            return render(request, 'checkout_form.html', {
+                'error': 'All fields are required',
+                'initial': initial_data
+            })
+
+        if action == "buy_now":
+            return buy_now(request, email)
+        elif action == "cancel_order":
+            CartItem.objects.filter(user=user).delete()
+            return redirect('view_cart')
+
 
 def rewards(request):
     vouchers = Voucher.objects.filter(user=request.user)
-    return render(request, 'users_coupons.html', {'vouchers': vouchers})
+    milestones = Milesstones.objects.order_by('milestone')
+    return render(request, 'users_coupons.html', {'vouchers': vouchers, 'milestones': milestones})
 

@@ -16,18 +16,22 @@
           </tr>
         </thead>
         <tbody>
-              <tr class="bg-green-50 border-l-4 border-green-500 text-center">
-                <td class="px-4 py-2 font-semibold text-green-700">🎯 20 games purchased</td>
-                <td class="px-4 py-2 text-green-700 font-medium">30% discount</td>
-                <td class="px-4 py-2 text-green-700 font-medium">{{ 20 }}/{{ user.games_ordered }}</td>
-              </tr>
-
+          {% for milestone in milestones %}
+              {% if milestone.milestone <= user.games_ordered %}
+                <tr class="bg-green-50 border-l-4 border-green-500 text-center">
+                  <td class="px-4 py-2 font-semibold text-green-700">🎯 {{milestone.milestone}} games purchased</td>
+                  <td class="px-4 py-2 text-green-700 font-medium">{{milestone.discount|floatformat:0}}% discount</td>
+                  <td class="px-4 py-2 text-green-700 font-medium">{{milestone.milestone}}/{{ user.games_ordered }}</td>
+                </tr>
+                
+              {% else %}
               <tr class="bg-gray-200 border-l-4 border-black text-center">
-                <td class="px-4 py-2">🎯 100 games purchased</td>
-                <td class="px-4 py-2">100% discount</td>
-                <td class="px-4 py-2">{{100 }}/ <p class="inline text-red-700">{{ user.games_ordered }}</p></td>
+                <td class="px-4 py-2">🎯 {{milestone.milestone}} games purchased</td>
+                <td class="px-4 py-2">{{milestone.discount|floatformat:0}}% discount</td>
+                <td class="px-4 py-2">{{milestone.milestone}}/ <p class="inline text-red-700">{{ user.games_ordered }}</p></td>
               </tr>
-
+              {% endif %}
+        {% endfor %}
         </tbody>
       </table>
     </div>
