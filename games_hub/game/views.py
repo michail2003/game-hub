@@ -21,13 +21,10 @@ def home(request):
     if searched_word:
         games = games.filter(title__contains=searched_word)
 
-    discounted_games = []
 
-    for game in Game.objects.all():
-        if game.discounted_price() < game.price:
-            discounted_games.append(game)
+    discounted_games = Game.objects.filter(discount__gt=0).order_by('-release_date', '-discount')[:4]
 
-    discounted_games = discounted_games[:12]
+
 
     return render(request, 'homepage.html', {
         'games': games,
@@ -109,19 +106,41 @@ def decrease_quantity(request, pk):
         item.delete() 
     return redirect('view_cart')
 
-def order_mail_invoice(request,order, email_adress):
+def order_mail_invoice(request, order, email_adress,city,street,area, apartment, phone_number):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A5)
     width, height = A5
 
+    # Title
     c.setFont("Helvetica", 20)
     title = "Faturë Tatimore"
     title_width = c.stringWidth(title, "Helvetica", 20)
     c.drawString((width - title_width) / 2, height - 50, title)
 
-    y = height - 120
-    items = OrderItem.objects.filter(order=order)
+    # Order & Shipping Info
+    y = height - 90
+    c.setFont("Helvetica", 10)
+    c.drawString(50, y, f"Order ID: {order.order_id}")
+    y -= 12
+    c.drawString(50, y, f"Order Date: {order.order_date.strftime('%d-%m-%Y %H:%M')}")
+    y -= 12
+    c.drawString(50, y, f"Customer: {order.user.first_name} {order.user.last_name}")
+    y -= 12
+    c.drawString(50, y, f"City: {city}")
+    y -= 12
+    c.drawString(50, y, f"Area: {area}")
+    y -= 12
+    c.drawString(50, y, f"Street: {street}")
+    y -= 12
+    c.drawString(50, y, f"Apartment: {apartment}")
+    y -= 12
+    c.drawString(50, y, f"Contact Number: {phone_number}")
 
+    # Space before items
+    y -= 25
+
+    # Order Items
+    items = OrderItem.objects.filter(order=order)
     for item in items:
         c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y, f"{item.game.title}")
@@ -129,24 +148,39 @@ def order_mail_invoice(request,order, email_adress):
 
         c.setFont("Helvetica", 12)
         c.drawString(50, y, f"{item.quantity} cope X {item.item_price:.2f} $")
+        if item.coupon_used:
+            y -= 15
+            c.drawString(100, y, f"coupon used: {item.coupon_used} $")
         c.drawString(350, y, f"{item.price:.2f} $")
         y -= 30
 
         c.drawString(50, y, '-' * 60)
         y -= 30
 
+    # Total
+    c.setFont("Helvetica-Bold", 12)
     c.drawString(280, y, f"Total Price: {order.total_price:.2f} $")
+
+    # Save PDF
     c.save()
     buffer.seek(0)
+
+    # Email with PDF
     email = EmailMessage(
-    subject=f'Your order with ID {order.order_id}',
-    body=f'Hello Mr/Mrs. {order.user.first_name} {order.user.last_name},\n\nYour order with ID {order.order_id} and total price {order.total_price:.2f} $ will be delivered soon.\n\nYour invoice is attached.',
-    from_email=settings.EMAIL_HOST_USER,
-    to=[email_adress],
-)
+        subject=f'Your order with ID {order.order_id}',
+        body=f'Hello Mr/Mrs. {order.user.first_name} {order.user.last_name},\n\n'
+             f'Your order with ID {order.order_id} placed on {order.order_date.strftime("%d-%m-%Y %H:%M")} '
+             f'with a total price of {order.total_price:.2f} $ will be delivered soon.\n\n'
+             f'Shipping to: {city}  {area}  {street}  {apartment}. '
+             f'Contact Number: {phone_number}.\n\n'
+             'Your invoice is attached.',
+        from_email=settings.EMAIL_HOST_USER,
+        to=[email_adress],
+    )
 
     email.attach(f'Invoice_{order.order_id}.pdf', buffer.read(), 'application/pdf')
     email.send()
+
 
 
 def milestone_voucher(request,bought):
@@ -162,7 +196,7 @@ def milestone_voucher(request,bought):
                 milestone = m.milestone,
             )
 
-def buy_now(request,mail):
+def buy_now(request,mail,city,street,area, apartment, phone_number):
     cart_items = CartItem.objects.filter(user=request.user)
 
     if not cart_items.exists():
@@ -193,7 +227,7 @@ def buy_now(request,mail):
 
     order.total_price = total
     order.save()
-    order_mail_invoice(request, order,mail)
+    order_mail_invoice(request, order,mail,city,street,area, apartment, phone_number)
     total_items = sum(item.quantity for item in cart_items)
     request.user.games_ordered += total_items
     request.user.save()
@@ -299,7 +333,7 @@ def checkout_view(request):
             })
 
         if action == "buy_now":
-            return buy_now(request, email)
+            return buy_now(request, email,city,street,area, apartment, phone_number)
         elif action == "cancel_order":
             CartItem.objects.filter(user=user).delete()
             return redirect('view_cart')

@@ -1,15 +1,56 @@
 {% extends 'base.html' %}
 {% block content %}
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: url('https://png.pngtree.com/thumb_back/fh260/background/20250429/pngtree-glowing-blue-award-ribbon---achievement-recognition-image_17239286.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
+  .content-wrapper {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  .info-text {
+    background: rgba(255, 255, 255, 0.395);
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.994);
+    margin-bottom: 2rem;
+  }
+  .table-card {
+    background: rgba(255, 255, 255, 0.395);
+    border-radius: 12px;
+    padding: 1rem;
+    border: #daf10865 2px solid;
+    box-shadow: 0 3px 12px rgba(244, 243, 243, 0.534);
+  }
+  .table-card h2 {
+    color: #ffffff; /* Indigo-900 */
+  }
+</style>
 
-<div class="max-w-xl w-full mx-auto">
+<div class="content-wrapper">
+
+  <!-- Page Description -->
+  <div class="info-text text-center md:text-left">
+    <h1 class="text-3xl font-bold mb-3 text-red-300">Rewards & Coupons</h1>
+    <p class="text-white text-lg">
+      Welcome to your rewards dashboard! Here you can track your milestone achievements,
+      see the discounts you’ve unlocked, and access your exclusive one-time use coupons!
+    </p>
+  </div>
 
   <!-- Milestone Rewards Table -->
-  <section class="bg-white p-6 rounded-lg shadow-md mb-8">
-    <h2 class="text-xl font-semibold mb-4 text-indigo-700">Milestone Rewards</h2>
+  <section class="table-card md:w-2/3 w-full mx-auto mb-8">
+    <h2 class="text-xl font-semibold mb-4">🎯Rewards Table</h2>
     <div class="overflow-x-auto">
       <table class="min-w-full border-collapse">
         <thead>
-          <tr class="bg-gray-100 text-left text-gray-700 text-center">
+          <tr class="bg-indigo-100 text-center text-gray-800">
             <th class="px-4 py-2">Milestone</th>
             <th class="px-4 py-2">Reward</th>
             <th class="px-4 py-2">Progress</th>
@@ -17,30 +58,39 @@
         </thead>
         <tbody>
           {% for milestone in milestones %}
-              {% if milestone.milestone <= user.games_ordered %}
-                <tr class="bg-green-50 border-l-4 border-green-500 text-center">
-                  <td class="px-4 py-2 font-semibold text-green-700">🎯 {{milestone.milestone}} games purchased</td>
-                  <td class="px-4 py-2 text-green-700 font-medium">{{milestone.discount|floatformat:0}}% discount</td>
-                  <td class="px-4 py-2 text-green-700 font-medium">{{milestone.milestone}}/{{ user.games_ordered }}</td>
-                </tr>
-                
-              {% else %}
-              <tr class="bg-gray-200 border-l-4 border-black text-center">
-                <td class="px-4 py-2">🎯 {{milestone.milestone}} games purchased</td>
-                <td class="px-4 py-2">{{milestone.discount|floatformat:0}}% discount</td>
-                <td class="px-4 py-2">{{milestone.milestone}}/ <p class="inline text-red-700">{{ user.games_ordered }}</p></td>
+            {% if milestone.milestone <= user.games_ordered %}
+              <tr class="bg-green-100 border-l-4 border-green-500 text-center">
+                <td class="px-4 py-2 font-semibold text-green-800">
+                  🎯 {{ milestone.milestone }} games purchased
+                </td>
+                <td class="px-4 py-2 text-green-800 font-medium">
+                  {{ milestone.discount|floatformat:0 }}% discount
+                </td>
+                <td class="px-4 py-2 text-green-800 font-medium">
+                  {{ milestone.milestone }}/{{ user.games_ordered }}
+                </td>
               </tr>
-              {% endif %}
-        {% endfor %}
+            {% else %}
+              <tr class="bg-gray-100 border-l-4 border-gray-500 text-center">
+                <td class="px-4 py-2">
+                  🎯 {{ milestone.milestone }} games purchased
+                </td>
+                <td class="px-4 py-2">{{ milestone.discount|floatformat:0 }}% discount</td>
+                <td class="px-4 py-2">
+                  {{ milestone.milestone }}/<span class="inline text-red-700">{{ user.games_ordered }}</span>
+                </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </section>
 
   <!-- Coupons Section -->
-  <section class="bg-white p-8 rounded-lg shadow-md">
-    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Your Coupons</h2>
-    <p class="text-gray-700 font-medium mb-6 bg-gray-100 p-3 rounded-md text-center">
+  <section class="table-card md:w-2/3 w-full mx-auto">
+    <h2 class="text-2xl font-semibold mb-5">🎁 Your Coupons</h2>
+    <p class="text-gray-600 font-medium mb-6 bg-indigo-50 p-3 rounded-md text-center">
       💡 These coupons are exclusive and can only be used once.
     </p>
 
@@ -48,22 +98,23 @@
       <ul class="space-y-4 text-indigo-700 font-mono text-lg">
         {% for v in vouchers %}
           <li class="border border-indigo-300 rounded-md p-4 bg-indigo-50 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow duration-200">
-            <!-- Code -->
             <span class="font-bold tracking-wide">{{ v.code }}</span>
-            
-            <!-- Milestone + Date -->
             <div class="text-center">
-              <span class="block font-semibold text-indigo-600">🎯 {{ v.milestone }} Games purchased</span>
-              <span class="block text-xs text-gray-500">{{ v.created_at|date:"d M, Y" }}</span>
+              <span class="block font-semibold text-indigo-600">
+                🎯 {{ v.milestone }} Games purchased
+              </span>
+              <span class="block text-xs text-gray-500">
+                {{ v.created_at|date:"d M, Y" }}
+              </span>
             </div>
-
-            <!-- Discount -->
             <span class="text-green-600 font-bold">{{ v.discount|floatformat:0 }}% OFF</span>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p class="text-gray-500 italic text-center text-lg">No coupons yet. Keep purchasing to earn rewards!</p>
+      <p class="text-gray-500 italic text-center text-lg">
+        No coupons yet. Keep purchasing to earn rewards!
+      </p>
     {% endif %}
   </section>
 
