@@ -52,11 +52,11 @@
         {% if game.discount > 0 %}
           <div class="flex items-center gap-2">
             <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">-{{ game.discount|floatformat:0 }}%</span>
-            <span class="line-through text-gray-400 text-sm">${{ game.price|floatformat:2 }}</span>
-            <span class="text-green-400 text-lg font-bold">${{ price|floatformat:2 }}</span>
+            <span class="line-through text-gray-400 text-sm">€{{ game.price|floatformat:2 }}</span>
+            <span class="text-green-400 text-lg font-bold">€{{ price|floatformat:2 }}</span>
           </div>
         {% else %}
-          <span class="text-lg font-bold text-white">${{ game.price|floatformat:2 }}</span>
+          <span class="text-lg font-bold text-white">€{{ game.price|floatformat:2 }}</span>
         {% endif %}
       </div>
 
@@ -83,45 +83,6 @@
       <p class="text-gray-300">No trailer available.</p>
     {% endif %}
   </div>
-  <div class="max-w-xl mx-auto mt-10 px-4">
-  <div class="relative flex items-center h-12">
-    <!-- Full track line -->
-    <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-300 -translate-y-1/2 rounded"></div>
-
-    <!-- Filled progress line -->
-    <div
-      class="absolute top-1/2 h-1 bg-blue-600 -translate-y-1/2 rounded transition-all duration-700 ease-in-out"
-      style="width: 62%;"
-      role="progressbar"
-      aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"
-    ></div>
-
-    <!-- Checkpoints -->
-    <div class="relative flex justify-between w-full px-1">
-      <!-- Circle 1 - active -->
-      <span class="w-8 h-8 rounded-full bg-white border-4 border-blue-600 shadow-md flex items-center justify-center -translate-y-1/2">
-        <!-- Optional: icon or number -->
-        1
-      </span>
-      <!-- Circle 2 - active -->
-      <span class="w-8 h-8 rounded-full bg-white border-4 border-blue-600 shadow-md flex items-center justify-center -translate-y-1/2">
-        2
-      </span>
-      <!-- Circle 3 - active -->
-      <span class="w-8 h-8 rounded-full bg-white border-4 border-blue-600 shadow-md flex items-center justify-center -translate-y-1/2">
-        3
-      </span>
-      <!-- Circle 4 - inactive -->
-      <span class="w-8 h-8 rounded-full bg-white border-4 border-gray-300 shadow-md flex items-center justify-center -translate-y-1/2">
-        4
-      </span>
-      <!-- Circle 5 - inactive -->
-      <span class="w-8 h-8 rounded-full bg-white border-4 border-gray-300 shadow-md flex items-center justify-center -translate-y-1/2">
-        5
-      </span>
-    </div>
-  </div>
-</div>
 
   <!-- PC Specs -->
   {% if game.console == "PC" %}

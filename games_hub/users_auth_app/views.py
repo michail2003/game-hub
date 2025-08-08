@@ -5,7 +5,7 @@ from .models import CustomUser
 def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return render(request, 'homepage.html')
+            return redirect('home')
         else:
             return render(request, 'login.html')
     else:

@@ -17,7 +17,7 @@
   <div class="bg-white shadow-md rounded-lg p-6 text-left mb-8">
     <p><strong>Order ID:</strong> {{ order_id }}</p>
     <p><strong>Order Date:</strong> {{ date|date:"F j, Y, g:i a" }}</p>
-    <p><strong>Total Price:</strong> ${{ total_price|floatformat:2 }}</p>
+    <p><strong>Total Price:</strong> €{{ total_price|floatformat:2 }}</p>
   </div>
 
   <div class="bg-white shadow-md rounded-lg p-6 text-left">
@@ -36,8 +36,8 @@
   <tr class="border-b">
     <td class="py-2">{{ item.game.title }}</td>
     <td class="py-2">{{ item.quantity }}</td>
-    <td class="py-2">${{ item.item_price|floatformat:2 }}</td>
-    <td class="py-2">${{ item.price|floatformat:2 }}</td>
+    <td class="py-2">€{{ item.item_price|floatformat:2 }}</td>
+    <td class="py-2">€{{ item.price|floatformat:2 }}</td>
     <td class="py-2">
       {% if item.coupon_used %}
         Coupon: {{ item.coupon_used }}

@@ -144,30 +144,61 @@
   </a>
 </li>
 
-          {% if user.is_authenticated %}
+  {% if user.is_authenticated %}
            <div class="relative group inline-block text-white">
   <!-- Name container -->
   <div class="italic font-bold px-4 py-2 bg-gray-800 rounded-t cursor-pointer flex gap-2">
-    <h4>{{ user.first_name }}</h4>
-    <h4>{{ user.last_name }}</h4>
-    <h4>{{user.games_ordered}}</h4>
+
+  {% if user.profile_picture %}
+    <img src="{{ user.profile_picture.url }}" alt="" class="w-12 h-12 rounded-full object-cover">
+    {% else %}
+     <img src="https://static.vecteezy.com/system/resources/thumbnails/024/983/914/small_2x/simple-user-default-icon-free-png.png" alt="" class="w-12 h-12 rounded-full object-cover">
+    {% endif %}
   </div>
 
   <!-- Logout box -->
-  <div class="absolute hidden group-hover:flex flex-col right-0 w-42 bg-white text-black shadow-lg rounded-b p-2 z-50">
-    
-    <a href="{% url 'accaunt' %}" class="px-2 py-1 hover:bg-gray-200 rounded block flex items-center gap-2">
-      <!-- Account SVG Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z"/></svg>Account
-  </a>
-    <a href="{% url 'rewards' %}" class="px-2 py-1 hover:bg-gray-200 rounded block flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M385.5 132.8C393.1 119.9 406.9 112 421.8 112L424 112C446.1 112 464 129.9 464 152C464 174.1 446.1 192 424 192L350.7 192L385.5 132.8zM254.5 132.8L289.3 192L216 192C193.9 192 176 174.1 176 152C176 129.9 193.9 112 216 112L218.2 112C233.1 112 247 119.9 254.5 132.8zM344.1 108.5L320 149.5L295.9 108.5C279.7 80.9 250.1 64 218.2 64L216 64C167.4 64 128 103.4 128 152C128 166.4 131.5 180 137.6 192L96 192C78.3 192 64 206.3 64 224L64 256C64 273.7 78.3 288 96 288L544 288C561.7 288 576 273.7 576 256L576 224C576 206.3 561.7 192 544 192L502.4 192C508.5 180 512 166.4 512 152C512 103.4 472.6 64 424 64L421.8 64C389.9 64 360.3 80.9 344.1 108.4zM544 336L344 336L344 544L480 544C515.3 544 544 515.3 544 480L544 336zM296 336L96 336L96 480C96 515.3 124.7 544 160 544L296 544L296 336z"/></svg>Rewards
-      </a>
-    <form method="POST" action="{% url 'logout' %}">
-      {% csrf_token %}
-      <button type="submit" class="w-full text-left px-2 py-1 hover:bg-gray-200 rounded flex items-center gap-2">Logout<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M224 160C241.7 160 256 145.7 256 128C256 110.3 241.7 96 224 96L160 96C107 96 64 139 64 192L64 448C64 501 107 544 160 544L224 544C241.7 544 256 529.7 256 512C256 494.3 241.7 480 224 480L160 480C142.3 480 128 465.7 128 448L128 192C128 174.3 142.3 160 160 160L224 160zM566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L438.6 169.3C426.1 156.8 405.8 156.8 393.3 169.3C380.8 181.8 380.8 202.1 393.3 214.6L466.7 288L256 288C238.3 288 224 302.3 224 320C224 337.7 238.3 352 256 352L466.7 352L393.3 425.4C380.8 437.9 380.8 458.2 393.3 470.7C405.8 483.2 426.1 483.2 438.6 470.7L566.6 342.7z"/></svg></button>
-    </form>
+ <div class="absolute hidden group-hover:flex flex-col right-0 w-64 bg-white text-black shadow-xl rounded-xl p-4 z-50">
+
+  <!-- Profile Picture and Basic Info -->
+  <div class="flex items-center gap-4 pb-4 border-b">
+    {% if user.profile_picture %}
+    <img src="{{ user.profile_picture.url }}" alt="" class="w-12 h-12 rounded-full object-cover">
+    {% else %}
+     <img src="https://static.vecteezy.com/system/resources/thumbnails/024/983/914/small_2x/simple-user-default-icon-free-png.png" alt="" class="w-12 h-12 rounded-full object-cover">
+    {% endif %}
+    <div>
+      <p class="font-semibold">{{ user.first_name }} {{ user.last_name }}</p>
+      <p class="text-sm text-gray-500">{{ user.email }}</p>
+    </div>
   </div>
+
+  <!-- Navigation Links -->
+  <div class="mt-4 space-y-2">
+    <a href="{% url 'accaunt' %}" class="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition">
+      <!-- Account Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z"/></svg>
+      Account
+    </a>
+
+    <a href="{% url 'rewards' %}" class="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition">
+      <!-- Rewards Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M385.5 132.8C393.1 119.9 406.9 112 421.8 112L424 112C446.1 112 464 129.9 464 152C464 174.1 446.1 192 424 192L350.7 192L385.5 132.8zM254.5 132.8L289.3 192L216 192C193.9 192 176 174.1 176 152C176 129.9 193.9 112 216 112L218.2 112C233.1 112 247 119.9 254.5 132.8zM344.1 108.5L320 149.5L295.9 108.5C279.7 80.9 250.1 64 218.2 64L216 64C167.4 64 128 103.4 128 152C128 166.4 131.5 180 137.6 192L96 192C78.3 192 64 206.3 64 224L64 256C64 273.7 78.3 288 96 288L544 288C561.7 288 576 273.7 576 256L576 224C576 206.3 561.7 192 544 192L502.4 192C508.5 180 512 166.4 512 152C512 103.4 472.6 64 424 64L421.8 64C389.9 64 360.3 80.9 344.1 108.4zM544 336L344 336L344 544L480 544C515.3 544 544 515.3 544 480L544 336zM296 336L96 336L96 480C96 515.3 124.7 544 160 544L296 544L296 336z"/></svg>
+      Rewards
+    </a>
+  </div>
+
+  <!-- Logout Button -->
+  <form method="POST" action="{% url 'logout' %}" class="mt-4 pt-2 border-t">
+    {% csrf_token %}
+    
+    <button type="submit" class="flex items-center gap-3 w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg transition">
+      <!-- Logout Icon -->
+       <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 640 640"><!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M224 160C241.7 160 256 145.7 256 128C256 110.3 241.7 96 224 96L160 96C107 96 64 139 64 192L64 448C64 501 107 544 160 544L224 544C241.7 544 256 529.7 256 512C256 494.3 241.7 480 224 480L160 480C142.3 480 128 465.7 128 448L128 192C128 174.3 142.3 160 160 160L224 160zM566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L438.6 169.3C426.1 156.8 405.8 156.8 393.3 169.3C380.8 181.8 380.8 202.1 393.3 214.6L466.7 288L256 288C238.3 288 224 302.3 224 320C224 337.7 238.3 352 256 352L466.7 352L393.3 425.4C380.8 437.9 380.8 458.2 393.3 470.7C405.8 483.2 426.1 483.2 438.6 470.7L566.6 342.7z"/></svg>
+      Logout
+    </button>
+  </form>
+</div>
+
 </div>
 
         {% else %}

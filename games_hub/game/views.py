@@ -12,6 +12,10 @@ from reportlab.pdfgen import canvas
 def home(request):
     games = Game.objects.all()
     genres = Game_Genre.objects.all()
+    total_items = 0
+    if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(user=request.user)
+        total_items = sum(item.quantity for item in cart_items)
 
     if 'genre' in request.GET:
         genre = request.GET['genre']
@@ -21,7 +25,6 @@ def home(request):
     if searched_word:
         games = games.filter(title__contains=searched_word)
 
-
     discounted_games = Game.objects.filter(discount__gt=0).order_by('-release_date', '-discount')[:4]
 
 
@@ -30,6 +33,7 @@ def home(request):
         'games': games,
         'genres': genres,
         'discounted_games': discounted_games,
+        'items': total_items,
     })
 
 
@@ -53,12 +57,14 @@ def game_detail(request, pk):
 
    
 def view_cart(request):
+    genres = Game_Genre.objects.all()
     if not request.user.is_authenticated:
-        return render(request, 'cart.html')
+        return render(request, 'cart.html',{"genres": genres})
     
     cart_items = CartItem.objects.filter(user=request.user)
     total = sum(item.total_price() for item in cart_items)
     total_items = sum(item.quantity for item in cart_items)
+    genres = Game_Genre.objects.all()
 
     # Find first voucher used in any item (or None if none)
     coupon_applied = next((item.voucher_used for item in cart_items if item.voucher_used), None)
@@ -68,6 +74,7 @@ def view_cart(request):
         'total': total,
         'items': total_items,
         'coupon_applied': coupon_applied,
+        'genres': genres,
     }
 
     return render(request, 'cart.html', context)
@@ -147,11 +154,11 @@ def order_mail_invoice(request, order, email_adress,city,street,area, apartment,
         y -= 20
 
         c.setFont("Helvetica", 12)
-        c.drawString(50, y, f"{item.quantity} cope X {item.item_price:.2f} $")
+        c.drawString(50, y, f"{item.quantity} cope X {item.item_price:.2f} €")
         if item.coupon_used:
             y -= 15
-            c.drawString(100, y, f"coupon used: {item.coupon_used} $")
-        c.drawString(350, y, f"{item.price:.2f} $")
+            c.drawString(100, y, f"coupon used: {item.coupon_used} €")
+        c.drawString(350, y, f"{item.price:.2f} €")
         y -= 30
 
         c.drawString(50, y, '-' * 60)
@@ -159,7 +166,7 @@ def order_mail_invoice(request, order, email_adress,city,street,area, apartment,
 
     # Total
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(280, y, f"Total Price: {order.total_price:.2f} $")
+    c.drawString(280, y, f"Total Price: {order.total_price:.2f} €")
 
     # Save PDF
     c.save()
@@ -170,7 +177,7 @@ def order_mail_invoice(request, order, email_adress,city,street,area, apartment,
         subject=f'Your order with ID {order.order_id}',
         body=f'Hello Mr/Mrs. {order.user.first_name} {order.user.last_name},\n\n'
              f'Your order with ID {order.order_id} placed on {order.order_date.strftime("%d-%m-%Y %H:%M")} '
-             f'with a total price of {order.total_price:.2f} $ will be delivered soon.\n\n'
+             f'with a total price of {order.total_price:.2f} € will be delivered soon.\n\n'
              f'Shipping to: {city}  {area}  {street}  {apartment}. '
              f'Contact Number: {phone_number}.\n\n'
              'Your invoice is attached.',
@@ -204,12 +211,12 @@ def buy_now(request,mail,city,street,area, apartment, phone_number):
 
     order = Order.objects.create(user=request.user)
     total = 0
-
+    voucher_to_delete = None  # Track if we need to delete a voucher
     for item in cart_items:
         voucher = item.voucher_used
         if voucher:
             if voucher.usage_limit == 1:
-                voucher.delete()
+                voucher_to_delete = voucher
             else:
                 voucher.used_count += 1
                 voucher.save()
@@ -221,13 +228,15 @@ def buy_now(request,mail,city,street,area, apartment, phone_number):
             quantity=item.quantity,
             price=price,
             item_price=item.game.discounted_price(),
-            coupon_used=item.voucher_used if item.voucher_used else None
+            coupon_used=item.voucher_used
         )
         total += price
 
     order.total_price = total
     order.save()
     order_mail_invoice(request, order,mail,city,street,area, apartment, phone_number)
+    if voucher_to_delete:
+        voucher_to_delete.delete()
     total_items = sum(item.quantity for item in cart_items)
     request.user.games_ordered += total_items
     request.user.save()
@@ -242,7 +251,6 @@ def buy_now(request,mail,city,street,area, apartment, phone_number):
         'date': order.order_date,
         'order_items': order_items, 
     })
-
 
 def delete_all_cart_items(request):
     if request.method == "POST":
@@ -283,15 +291,23 @@ def remove_voucher(request):
 
 
 def view_orders(request):
+    genres = Game_Genre.objects.all()
     if not request.user.is_authenticated:
-        return render(request, 'orders.html') # Redirect to login if not authenticated
-    
+        return render(request, 'orders.html',{'genres': genres}) 
+    cart_items = CartItem.objects.filter(user=request.user)
+    total_items = sum(item.quantity for item in cart_items)
+
     orders = Order.objects.filter(user=request.user)
-    return render(request, 'orders.html', {'orders': orders})
+    orders = orders.order_by('-order_date')  # Order by date descending
+    return render(request, 'orders.html', {'orders': orders, 'items': total_items, 'genres': genres})
 
-
+def remove_order(request,pk):
+    order = Order.objects.get(id=pk)
+    order.delete()
+    return redirect('view_orders')
 
 def checkout_view(request):
+    
     user = request.user
 
     # Default initial data from user profile
@@ -340,7 +356,10 @@ def checkout_view(request):
 
 
 def rewards(request):
+    genres = Game_Genre.objects.all()
+    cart_items = CartItem.objects.filter(user=request.user)
+    total_items = sum(item.quantity for item in cart_items)
     vouchers = Voucher.objects.filter(user=request.user)
     milestones = Milesstones.objects.order_by('milestone')
-    return render(request, 'users_coupons.html', {'vouchers': vouchers, 'milestones': milestones})
+    return render(request, 'users_coupons.html', {'vouchers': vouchers, 'milestones': milestones, 'items': total_items, 'genres': genres})
 

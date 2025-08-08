@@ -25,10 +25,27 @@
           {% endif %}
         </div>
 
-        <h3 class="text-lg font-semibold text-gray-100 mb-1">{{ game.title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-100 mb-1">{{ game.title }}
+        <div class="flex gap-2 mt-2">
+              {% if game.console in "PS4,PS5" %}
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/PlayStation_App_Icon.jpg/960px-PlayStation_App_Icon.jpg"
+                alt="{{game.console}}" class="w-6 h-6 rounded">
+              {% elif game.console in "Xbox One,Xbox Series X/S" %}
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ7o9PWdjsGwzR2RASI1FPux7P8R5_S_sbfrckdpgFYlAmayRHnMBAU0T6RlijRMbeET4&usqp=CAU"
+                alt="{{game.console}}" class="w-6 h-6 rounded">
+              {% elif game.console == "Nintendo Switch" %}
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Nintendo_Switch_logo.svg/640px-Nintendo_Switch_logo.svg.png"
+                alt="{{game.console}}" class="w-6 h-6 rounded">
+              {% elif game.console == "PC" %}
+              <img src="https://cdn-icons-png.flaticon.com/512/18288/18288996.png"
+                alt="{{game.console}}" class="w-6 h-6 rounded">
+              {% endif %}
+              <h4 class="text-white">{{game.console}}</h4>
+            </div>
+            </h3>
         <p class="mb-2">
-          <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
-          <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
+          <span class="line-through text-gray-500">€{{ game.price|floatformat:2 }}</span>
+          <span class="text-green-600 font-bold ml-2">€{{ game.discounted_price|floatformat:2 }}</span>
         </p>
 
         <div class="flex gap-2 mt-3">
@@ -94,10 +111,10 @@
           </h3>
           <p class="mb-2">
             {% if game.discounted_price < game.price %}
-              <span class="line-through text-gray-500">${{ game.price|floatformat:2 }}</span>
-              <span class="text-green-600 font-bold ml-2">${{ game.discounted_price|floatformat:2 }}</span>
+              <span class="line-through text-gray-500">€{{ game.price|floatformat:2 }}</span>
+              <span class="text-green-600 font-bold ml-2">€{{ game.discounted_price|floatformat:2 }}</span>
             {% else %}
-              <span class="text-gray-800 font-bold">${{ game.price|floatformat:2 }}</span>
+              <span class="text-gray-800 font-bold">€{{ game.price|floatformat:2 }}</span>
             {% endif %}
           </p>
         </a>

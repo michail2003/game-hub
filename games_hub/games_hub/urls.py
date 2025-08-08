@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from game import views
 from users_auth_app import views as auth_views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -40,4 +42,5 @@ urlpatterns = [
     path('checkout-form/', views.checkout_view, name='checkout_form'),
     path('order-confirmation/', views.buy_now, name='order_confirmation'),
     path('rewards/', views.rewards, name='rewards'),
-]
+    path('remove-order/<int:pk>/', views.remove_order, name='remove-order'),
+]+static (settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
