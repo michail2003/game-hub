@@ -25,7 +25,8 @@ def home(request):
     if searched_word:
         games = games.filter(title__contains=searched_word)
 
-    discounted_games = Game.objects.filter(discount__gt=0).order_by('-release_date', '-discount')[:4]
+    discounted_games = Game.objects.order_by('-discount')[:4]
+    games = games.order_by('-release_date')  # Limit to 8 most recent games
 
 
 
